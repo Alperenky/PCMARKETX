@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siparişlerim - PC MARKET X</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/orders.css">
+</head>
+<body>
+  <!-- Navbar Container -->
+  <div id="navbar-container"></div>
+
+  <main>
+    <section class="orders-section">
+      <div class="container">
+        <h1 class="page-title">Siparişlerim</h1>
+        
+        <div class="orders-container">
+          <div class="order-filters">
+            <div class="filter-group">
+              <label for="order-status">Durum:</label>
+              <select id="order-status">
+                <option value="all">Tümü</option>
+                <option value="processing">İşleme Alındı</option>
+                <option value="shipped">Kargoya Verildi</option>
+                <option value="delivered">Teslim Edildi</option>
+                <option value="cancelled">İptal Edildi</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="order-date">Tarih:</label>
+              <select id="order-date">
+                <option value="all">Tümü</option>
+                <option value="last-month">Son 1 Ay</option>
+                <option value="last-3-months">Son 3 Ay</option>
+                <option value="last-6-months">Son 6 Ay</option>
+                <option value="last-year">Son 1 Yıl</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="apply-filters">Filtreleri Uygula</button>
+          </div>
+          
+          <div class="orders-list" id="orders-list">
+            <!-- Siparişler JavaScript ile yüklenecek -->
+            <div class="empty-orders" id="empty-orders">
+              <i class="fas fa-box-open"></i>
+              <p>Henüz sipariş bulunmamaktadır.</p>
+              <a href="/" class="btn btn-primary">Alışverişe Başla</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Order Detail Modal -->
+    <div class="modal" id="order-detail-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Sipariş Detayları</h2>
+          <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body" id="order-detail-content">
+          <!-- Sipariş detayları JavaScript ile yüklenecek -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3>PC MARKET X</h3>
+          <p>En iyi bilgisayar parçaları ve çevre birimlerinin adresi. Kaliteli ürünler, uygun fiyatlar, hızlı kargo ve müşteri memnuniyeti.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h3>Kategoriler</h3>
+          <ul>
+            <li><a href="/category/islemciler.html">İşlemciler</a></li>
+            <li><a href="/category/ekran-kartlari.html">Ekran Kartları</a></li>
+            <li><a href="/category/anakartlar.html">Anakartlar</a></li>
+            <li><a href="/category/ram.html">RAM</a></li>
+            <li><a href="/category/depolama.html">Depolama</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Bilgi</h3>
+          <ul>
+            <li><a href="/about-us.html">Hakkımızda</a></li>
+            <li><a href="/contact.html">İletişim</a></li>
+            <li><a href="/privacy-policy.html">Gizlilik Politikası</a></li>
+            <li><a href="/terms-conditions.html">Şartlar ve Koşullar</a></li>
+            <li><a href="/faq.html">Sıkça Sorulan Sorular</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>İletişim</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Örnek Mahallesi, Örnek Caddesi No:123, İstanbul</p>
+          <p><i class="fas fa-phone"></i> +90 (212) 555 55 55</p>
+          <p><i class="fas fa-envelope"></i> info@pcmarketx.com</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2023 PC MARKET X. Tüm hakları saklıdır.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/navbar.js"></script>
+  <script src="/js/navbar-loader.js"></script>
+  <script src="/js/orders.js"></script>
+</body>
+</html> 
