@@ -7,10 +7,14 @@ const fs = require('fs');
 require('dotenv').config();
 const connectDB = require('./src/config/db');
 const { notFound, errorHandler } = require('./src/middleware/errorMiddleware');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // Express uygulamasını başlat
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+// Sunucu portu
+const PORT = process.env.PORT || 5002;
 
 // Middleware
 app.use(cors());
@@ -19,6 +23,57 @@ app.use(express.urlencoded({ extended: true }));
 
 // Statik dosyaları sunma
 app.use(express.static(path.join(__dirname, 'public')));
+
+// HTML dosyalarına doğrudan erişim için özel yönlendirme
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html', 'login.html'));
+});
+
+app.get('/register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html', 'register.html'));
+});
+
+app.get('/profile', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html', 'profile.html'));
+});
+
+app.get('/cart', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html', 'cart.html'));
+});
+
+app.get('/orders', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'html', 'orders.html'));
+});
+
+// Kategori sayfaları için yönlendirme
+app.get('/category/:categoryName', (req, res) => {
+  const categoryName = req.params.categoryName;
+  res.sendFile(path.join(__dirname, 'public', 'category', `${categoryName}.html`));
+});
+
+// API endpoint: Kategoriye göre ürünleri getir (slug ile)
+app.get('/api/products/by-category/:slug', async (req, res) => {
+  try {
+    // Önce kategoriyi bul
+    const category = await Category.findOne({ slug: req.params.slug });
+    if (!category) {
+      return res.status(404).json({ message: 'Kategori bulunamadı' });
+    }
+    
+    // Kategori ID'sini kullanarak ürünleri bul
+    const products = await Product.find({ category: category._id })
+      .sort({ createdAt: -1 });
+    
+    res.json(products);
+  } catch (error) {
+    console.error('Kategoriye göre ürünler getirilirken hata oluştu:', error);
+    res.status(500).json({ message: 'Ürünler yüklenirken bir hata oluştu', error: error.message });
+  }
+});
 
 // Multer Storage ayarları (Resim yükleme)
 const storage = multer.diskStorage({
@@ -72,10 +127,12 @@ const ProductSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     price: { type: Number, required: true },
     description: { type: String, required: true, trim: true },
+    brand: { type: String, trim: true },
     imageUrl: { type: String },
     stock: { type: Number, default: 0 },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     status: { type: String, enum: ['ACTIVE', 'INACTIVE', 'POPULAR'], default: 'ACTIVE' },
+    features: [String],
     sales: { type: Number, default: 0 }
 }, { timestamps: true });
 
@@ -109,7 +166,150 @@ const Product = mongoose.model('Product', ProductSchema);
 const Customer = mongoose.model('Customer', CustomerSchema);
 const Order = mongoose.model('Order', OrderSchema);
 
+// User Model
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: [true, 'Kullanıcı adı zorunludur'],
+    unique: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: [true, 'E-posta adresi zorunludur'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Geçerli bir e-posta adresi giriniz']
+  },
+  password: {
+    type: String,
+    required: [true, 'Şifre zorunludur'],
+    minlength: [6, 'Şifre en az 6 karakter olmalıdır']
+  },
+  firstName: {
+    type: String,
+    trim: true
+  },
+  lastName: {
+    type: String,
+    trim: true
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { timestamps: true });
+
+// Şifreyi kaydetmeden önce hash'leme
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// Şifre doğrulama metodu
+userSchema.methods.matchPassword = async function(enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+const User = mongoose.model('User', userSchema);
+
+// JWT Token oluşturma
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'gizli_anahtar', {
+    expiresIn: '30d'
+  });
+};
+
 // API Endpointleri
+// Kullanıcı işlemleri
+app.post('/api/users/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Tüm alanların doldurulduğunu kontrol et
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Lütfen tüm alanları doldurun' });
+    }
+
+    // Şifre kontrolü
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Şifre en az 6 karakter olmalıdır' });
+    }
+
+    // Kullanıcının zaten var olup olmadığını kontrol et
+    const userExists = await User.findOne({ $or: [{ email }, { username }] });
+
+    if (userExists) {
+      return res.status(400).json({ message: 'Bu kullanıcı adı veya e-posta adresi zaten kullanılıyor' });
+    }
+
+    // Yeni kullanıcı oluştur
+    const user = await User.create({
+      username,
+      email,
+      password
+    });
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user._id)
+      });
+    } else {
+      res.status(400).json({ message: 'Geçersiz kullanıcı bilgileri' });
+    }
+  } catch (error) {
+    console.error('Kullanıcı kaydı yapılırken hata oluştu:', error);
+    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+  }
+});
+
+app.post('/api/users/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // E-posta ile kullanıcıyı bul
+    const user = await User.findOne({ email });
+
+    // Kullanıcı varsa ve şifre doğruysa
+    if (user && (await user.matchPassword(password))) {
+      res.json({
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        role: user.role,
+        token: generateToken(user._id)
+      });
+    } else {
+      res.status(401).json({ message: 'Geçersiz e-posta veya şifre' });
+    }
+  } catch (error) {
+    console.error('Kullanıcı girişi yapılırken hata oluştu:', error);
+    res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+  }
+});
+
 // Kategoriler
 app.get('/api/categories', async (req, res) => {
     try {
@@ -762,9 +962,14 @@ app.use((req, res, next) => {
         return res.status(404).json({ message: 'API endpoint bulunamadı' });
     }
     
-    // Frontend SPA için tüm istekleri index.html'e yönlendir
+    // Ana sayfa yönlendirmesi
+    if (req.path === '/') {
+        return res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
+    }
+    
+    // Frontend SPA için tüm istekleri html/index.html'e yönlendir
     if (!req.path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
-        return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        return res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
     }
     
     next();

@@ -27,9 +27,19 @@
   padding: 2rem;
 }
 
+.auth-form-container {
+  width: 100%;
+}
+
 .auth-header {
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.auth-header h1 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--vatan-secondary);
 }
 
 .auth-header h2 {
@@ -53,19 +63,19 @@
   color: var(--vatan-secondary);
 }
 
-.input-with-icon {
+.input-group {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.input-with-icon i {
+.input-icon {
   position: absolute;
   left: 1rem;
   color: var(--vatan-dark-gray);
 }
 
-.input-with-icon input {
+.input-group input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
   border: 1px solid var(--vatan-gray);
@@ -74,10 +84,26 @@
   transition: all 0.2s ease;
 }
 
-.input-with-icon input:focus {
+.input-group input:focus {
   border-color: var(--vatan-primary);
   box-shadow: 0 0 0 2px rgba(232, 31, 42, 0.2);
   outline: none;
+}
+
+.input-error {
+  color: var(--vatan-danger);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  min-height: 1rem;
+}
+
+.form-error {
+  color: var(--vatan-danger);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  min-height: 1.5rem;
 }
 
 .toggle-password {
@@ -114,6 +140,7 @@
 
 .password-requirements li i {
   margin-right: 0.5rem;
+  color: var(--vatan-gray);
 }
 
 .password-requirements li.valid {
@@ -186,6 +213,24 @@
 
 .forgot-password:hover {
   text-decoration: underline;
+}
+
+.btn-auth {
+  background-color: var(--vatan-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.btn-auth:hover {
+  background-color: #c41822;
 }
 
 .btn-primary {
@@ -262,6 +307,16 @@
 
 .btn-social:hover {
   background-color: var(--vatan-light-gray);
+}
+
+.btn-social.google {
+  border-color: #db4437;
+  color: #db4437;
+}
+
+.btn-social.facebook {
+  border-color: #4267B2;
+  color: #4267B2;
 }
 
 .btn-google:hover {

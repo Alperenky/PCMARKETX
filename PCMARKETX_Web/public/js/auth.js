@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Navbar yükleme
-  loadNavbar();
-  
   // Form işlemleri
   const loginForm = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
@@ -20,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Şifre doğrulama
     const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirm-password');
+    const confirmPasswordInput = document.getElementById('password-confirm');
     
     if (passwordInput && confirmPasswordInput) {
       confirmPasswordInput.addEventListener('input', function() {
@@ -32,23 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Kullanıcı durumunu kontrol et
   checkUserStatus();
 });
-
-// Navbar yükleme
-function loadNavbar() {
-  const navbarContainer = document.getElementById('navbar-container');
-  
-  if (navbarContainer) {
-    fetch('/components/navbar.html')
-      .then(response => response.text())
-      .then(html => {
-        navbarContainer.innerHTML = html;
-        updateNavbarUserStatus();
-      })
-      .catch(error => {
-        console.error('Navbar yüklenirken hata oluştu:', error);
-      });
-  }
-}
 
 // Şifre görünürlük düğmeleri ayarı
 function setupPasswordToggles() {
@@ -78,7 +58,13 @@ async function handleLoginSubmit(e) {
   
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  const remember = document.getElementById('remember')?.checked;
+  const remember = document.getElementById('remember-me')?.checked;
+  
+  // Form doğrulama
+  if (!email || !password) {
+    showNotification('Lütfen tüm alanları doldurun', 'error');
+    return;
+  }
   
   try {
     // API'ye giriş isteği gönder
@@ -112,6 +98,7 @@ async function handleLoginSubmit(e) {
     }, 2000);
     
   } catch (error) {
+    console.error('Hata:', error);
     showNotification(error.message, 'error');
   }
 }
@@ -123,11 +110,11 @@ async function handleRegisterSubmit(e) {
   const username = document.getElementById('username').value;
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  const confirmPassword = document.getElementById('confirm-password').value;
-  const termsAccepted = document.getElementById('terms').checked;
+  const passwordConfirm = document.getElementById('password-confirm').value;
+  const termsAccepted = document.getElementById('terms')?.checked;
   
   // Form doğrulama
-  if (!username || !email || !password) {
+  if (!username || !email || !password || !passwordConfirm) {
     showNotification('Lütfen tüm alanları doldurun', 'error');
     return;
   }
@@ -137,7 +124,7 @@ async function handleRegisterSubmit(e) {
     return;
   }
   
-  if (password !== confirmPassword) {
+  if (password !== passwordConfirm) {
     showNotification('Şifreler eşleşmiyor', 'error');
     return;
   }
@@ -175,6 +162,7 @@ async function handleRegisterSubmit(e) {
     }, 2000);
     
   } catch (error) {
+    console.error('Hata:', error);
     showNotification(error.message, 'error');
   }
 }
@@ -216,86 +204,52 @@ function checkUserStatus() {
   if (userInfo && userInfo.token) {
     // Kullanıcı giriş yapmışsa ve login/register sayfalarındaysa ana sayfaya yönlendir
     const currentPath = window.location.pathname;
-    if (currentPath === '/login.html' || currentPath === '/register.html') {
+    if (currentPath === '/login' || currentPath === '/register') {
       window.location.href = '/';
     }
   }
 }
 
-// Navbar kullanıcı durumunu güncelle
-function updateNavbarUserStatus() {
-  // localStorage veya sessionStorage'dan kullanıcı bilgilerini al
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo') || '{}');
-  
-  // Kullanıcı dropdown menüsünü bul
-  const userDropdown = document.querySelector('.user-dropdown');
-  if (!userDropdown) return;
-  
-  const dropdownMenu = userDropdown.querySelector('.dropdown-menu');
-  if (!dropdownMenu) return;
-  
-  // Kullanıcı adı elementini bul
-  const userActionText = userDropdown.querySelector('.action-text');
-  
-  // Token varsa kullanıcı giriş yapmış demektir
-  if (userInfo && userInfo.token) {
-    // Kullanıcı adını göster
-    if (userActionText) {
-      userActionText.textContent = userInfo.username || 'Hesabım';
-    }
-    
-    // Dropdown menüyü güncelle
-    dropdownMenu.innerHTML = `
-      <a href="/profile.html">Profilim</a>
-      <a href="/orders.html">Siparişlerim</a>
-      <a href="#" id="logout-link">Çıkış Yap</a>
-    `;
-    
-    // Çıkış yapma bağlantısına olay dinleyici ekle
-    const logoutLink = document.getElementById('logout-link');
-    if (logoutLink) {
-      logoutLink.addEventListener('click', handleLogout);
-    }
-  }
-}
-
-// Çıkış yapma işlemi
-function handleLogout(e) {
-  e.preventDefault();
-  
-  // localStorage ve sessionStorage'dan kullanıcı bilgilerini temizle
-  localStorage.removeItem('userInfo');
-  sessionStorage.removeItem('userInfo');
-  
-  // Başarılı bildirim göster
-  showNotification('Çıkış yapıldı!', 'success');
-  
-  // Sayfayı yenile
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
-}
-
 // Bildirim gösterme
-function showNotification(message, type = 'primary') {
-  // Bildirim elementi oluştur
+function showNotification(message, type = 'info') {
+  // Eğer mevcut bildirim varsa kaldır
+  const existingNotification = document.querySelector('.notification');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+  
+  // Yeni bildirim oluştur
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
-  notification.textContent = message;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span>${message}</span>
+      <button class="notification-close">&times;</button>
+    </div>
+  `;
   
   // Body'ye ekle
   document.body.appendChild(notification);
   
-  // Bildirimi göster
+  // Animasyon ekle
   setTimeout(() => {
     notification.classList.add('show');
   }, 10);
   
-  // 3 saniye sonra bildirimi kaldır
+  // Kapatma düğmesi
+  const closeButton = notification.querySelector('.notification-close');
+  closeButton.addEventListener('click', () => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  });
+  
+  // Otomatik kapat
   setTimeout(() => {
     notification.classList.remove('show');
     setTimeout(() => {
       notification.remove();
     }, 300);
-  }, 3000);
+  }, 5000);
 } 

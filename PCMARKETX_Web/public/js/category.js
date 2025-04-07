@@ -204,7 +204,7 @@ function renderProducts(products, container) {
     // Brand
     const brand = document.createElement('div');
     brand.className = 'product-brand';
-    brand.textContent = product.brand;
+    brand.textContent = product.brand || 'Marka Belirtilmemiş';
     productInfo.appendChild(brand);
     
     // Title
@@ -330,7 +330,7 @@ function loadBrands(products) {
     .map(checkbox => checkbox.value);
   
   // Get unique brands from products
-  const brands = [...new Set(products.map(product => product.brand))];
+  const brands = [...new Set(products.map(product => product.brand).filter(brand => brand))];
   
   // Add new brands
   brands.forEach(brand => {
@@ -338,9 +338,10 @@ function loadBrands(products) {
       const brandDiv = document.createElement('div');
       brandDiv.className = 'filter-checkbox';
       
+      const brandId = brand.toLowerCase().replace(/\s+/g, '-');
       const brandInput = document.createElement('input');
       brandInput.type = 'checkbox';
-      brandInput.id = `brand-${brand.toLowerCase().replace(/\s+/g, '-')}`;
+      brandInput.id = `brand-${brandId}`;
       brandInput.value = brand;
       
       const brandLabel = document.createElement('label');

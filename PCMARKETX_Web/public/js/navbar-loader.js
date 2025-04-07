@@ -40,10 +40,16 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span>Sepetim</span>
                             <span class="badge" id="cart-count">0</span>
                         </a>
-                        <a href="/account.html" class="user-action">
-                            <i class="fas fa-user"></i>
-                            <span>Hesabım</span>
-                        </a>
+                        <div class="user-dropdown">
+                            <a href="#" class="user-action" id="account-action">
+                                <i class="fas fa-user"></i>
+                                <span>Hesabım</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </a>
+                            <div class="dropdown-menu" id="user-dropdown-menu">
+                                <!-- Menü içeriği updateUserStatus fonksiyonunda dinamik olarak güncellenir -->
+                            </div>
+                        </div>
                     </div>
 
                     <button class="mobile-menu-toggle">
@@ -81,7 +87,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <li><a href="/category/kasalar.html"><i class="fas fa-desktop"></i> Bilgisayar Kasaları</a></li>
                                         <li><a href="/category/sogutma-sistemleri.html"><i class="fas fa-fan"></i> Soğutma Sistemleri</a></li>
                                         <li><a href="/category/monitorler.html"><i class="fas fa-desktop"></i> Monitörler</a></li>
-                                        <li><a href="/category/ses-sistemleri.html"><i class="fas fa-volume-up"></i> Ses Sistemleri</a></li>
                                     </ul>
                                 </div>
                                 <div class="mega-menu-column">
@@ -89,9 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <ul>
                                         <li><a href="/category/klavyeler.html"><i class="fas fa-keyboard"></i> Klavyeler</a></li>
                                         <li><a href="/category/mouse.html"><i class="fas fa-mouse"></i> Mouse</a></li>
-                                        <li><a href="/category/kulaklıklar.html"><i class="fas fa-headphones"></i> Kulaklıklar</a></li>
-                                        <li><a href="/category/webcam.html"><i class="fas fa-camera"></i> Webcam</a></li>
-                                        <li><a href="/category/mikrofon.html"><i class="fas fa-microphone"></i> Mikrofonlar</a></li>
+                                        <li><a href="/category/kulakliklar.html"><i class="fas fa-headphones"></i> Kulaklıklar</a></li>
+
                                     </ul>
                                 </div>
                                 </div>
@@ -152,6 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sepet ve favoriler sayısını localStorage'dan yükle
     updateCartCount();
     updateFavoritesCount();
+    
+    // Kullanıcı durumunu güncelle
+    updateUserStatus();
 });
 
 /**
@@ -176,11 +183,100 @@ function updateFavoritesCount() {
     }
 }
 
+/**
+ * Kullanıcı durumunu günceller
+ */
+function updateUserStatus() {
+    // localStorage veya sessionStorage'dan kullanıcı bilgilerini al
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo') || '{}');
+    
+    // Hesabım butonunu bul
+    const accountAction = document.getElementById('account-action');
+    if (!accountAction) return;
+    
+    // Kullanıcı span elementini bul
+    const spanElement = accountAction.querySelector('span');
+    
+    // Dropdown menüyü bul
+    const dropdownMenu = document.getElementById('user-dropdown-menu');
+    if (!dropdownMenu) return;
+    
+    // Token varsa kullanıcı giriş yapmış demektir
+    if (userInfo && userInfo.token) {
+        // Kullanıcı adını göster
+        if (spanElement) {
+            spanElement.textContent = userInfo.username || 'Hesabım';
+        }
+        
+        // Dropdown menüyü güncelle - giriş yapılmış
+        dropdownMenu.innerHTML = `
+            <a href="/profile">Profilim</a>
+            <a href="/orders">Siparişlerim</a>
+            <a href="#" id="logout-link">Çıkış Yap</a>
+        `;
+        
+        // Çıkış yapma işlemi
+        const logoutLink = dropdownMenu.querySelector('#logout-link');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // localStorage ve sessionStorage'dan kullanıcı bilgilerini temizle
+                localStorage.removeItem('userInfo');
+                sessionStorage.removeItem('userInfo');
+                
+                // Sayfayı yenile
+                window.location.reload();
+            });
+        }
+    } else {
+        // Kullanıcı giriş yapmamışsa
+        if (spanElement) {
+            spanElement.textContent = 'Hesabım';
+        }
+        
+        // Dropdown menüyü güncelle - giriş yapılmamış
+        dropdownMenu.innerHTML = `
+            <a href="/login">Giriş Yap</a>
+            <a href="/register">Kayıt Ol</a>
+        `;
+    }
+    
+    // Kullanıcı dropdown açma/kapama
+    setupUserDropdown();
+}
+
+/**
+ * Kullanıcı dropdown açma/kapama
+ */
+function setupUserDropdown() {
+    const accountAction = document.getElementById('account-action');
+    const dropdownMenu = document.getElementById('user-dropdown-menu');
+    const userDropdown = document.querySelector('.user-dropdown');
+    
+    if (!accountAction || !dropdownMenu || !userDropdown) return;
+    
+    // Hesabım butonuna tıklandığında dropdown'ı aç/kapat
+    accountAction.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdownMenu.classList.toggle('active');
+    });
+    
+    // Sayfa herhangi bir yerine tıklandığında dropdown'ı kapat
+    document.addEventListener('click', function(e) {
+        if (!userDropdown.contains(e.target)) {
+            dropdownMenu.classList.remove('active');
+        }
+    });
+}
+
 // Sayfa değişimi veya sepet/favoriler güncellendiğinde bu fonksiyonlar tetiklenmelidir
 window.addEventListener('storage', function(e) {
     if (e.key === 'cartItems') {
         updateCartCount();
     } else if (e.key === 'favorites') {
         updateFavoritesCount();
+    } else if (e.key === 'userInfo') {
+        updateUserStatus();
     }
 }); 

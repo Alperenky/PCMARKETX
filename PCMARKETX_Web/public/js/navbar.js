@@ -87,7 +87,7 @@ function updateUserStatus() {
     }
     
     // Link yönlendirmesini güncelle
-    accountButton.href = '/profile.html';
+    accountButton.href = '/profile';
   } else {
     // Kullanıcı giriş yapmamışsa
     const spanElement = accountButton.querySelector('span');
@@ -96,7 +96,7 @@ function updateUserStatus() {
     }
     
     // Link yönlendirmesini güncelle
-    accountButton.href = '/login.html';
+    accountButton.href = '/login';
   }
 }
 

@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAM - PC MARKET X</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/navbar.css">
     <link rel="stylesheet" href="/css/category.css">
+    <link rel="stylesheet" href="/css/notification.css">
 </head>
 <body>
     <!-- Navbar Container -->
@@ -144,5 +145,149 @@
     <script src="/js/navbar.js"></script>
     <script src="/js/navbar-loader.js"></script>
     <script src="/js/category.js"></script>
+    <script>
+    // Sayfanın mevcut JavaScript'lerine ek olarak
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // RAM ürünlerini API'den çekiyoruz
+            const response = await fetch('/api/products/by-category/ram-bellek');
+            const products = await response.json();
+            
+            // Ürün grid ve sayaçlarını buluyoruz
+            const productGrid = document.getElementById('product-grid');
+            const productCount = document.getElementById('product-count');
+            
+            // Ürünleri kontrol et
+            if (products.length === 0) {
+                productGrid.innerHTML = '<div class="no-products">Bu kategoride ürün bulunamadı.</div>';
+                productCount.textContent = '0 ürün bulundu';
+                return;
+            }
+            
+            // Ürün sayısını güncelle
+            productCount.textContent = `${products.length} ürün bulundu`;
+            
+            // Ürünleri temizle
+            productGrid.innerHTML = '';
+            
+            // Ürünleri listeleyerek gösteriyoruz
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-item';
+                
+                // Ürün özellikleri
+                const features = product.features && product.features.length > 0 
+                    ? product.features.map(feature => `<li>${feature}</li>`).join('') 
+                    : '';
+                
+                // Ürün kartı içeriğini oluşturuyoruz
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        <a href="/product/${product._id}">
+                            <img src="${product.imageUrl || '/images/placeholder.jpg'}" alt="${product.name}">
+                        </a>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">
+                            <a href="/product/${product._id}">${product.name}</a>
+                        </h3>
+                        <p class="product-brand">${product.brand || ''}</p>
+                        <div class="product-price">${product.price.toLocaleString('tr-TR')} TL</div>
+                        <div class="product-features">
+                            <ul>
+                                ${features}
+                            </ul>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-primary add-to-cart" data-product-id="${product._id}">
+                                <i class="fas fa-shopping-cart"></i> Sepete Ekle
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                productGrid.appendChild(productCard);
+            });
+            
+            // Sepete ekleme işlevi
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    
+                    // Yerel depolamadan sepet bilgilerini al
+                    let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+                    
+                    // Ürünü bul
+                    const product = products.find(p => p._id === productId);
+                    
+                    // Ürün sepete ekle
+                    cart.push({
+                        id: product._id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.imageUrl || '/images/placeholder.jpg',
+                        quantity: 1
+                    });
+                    
+                    // Sepeti güncelle
+                    localStorage.setItem('cartItems', JSON.stringify(cart));
+                    
+                    // Sepet sayısını güncelle
+                    updateCartCount();
+                    
+                    // Bildirim göster
+                    showNotification('Ürün sepete eklendi!', 'success');
+                });
+            });
+            
+            // Sepet sayısını güncelleme fonksiyonu
+            function updateCartCount() {
+                const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+                const cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement) {
+                    cartCountElement.textContent = cartItems.length;
+                }
+            }
+            
+            // Bildirim gösterme fonksiyonu
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <span>${message}</span>
+                        <button class="notification-close">&times;</button>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+                
+                const closeButton = notification.querySelector('.notification-close');
+                closeButton.addEventListener('click', () => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                });
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+            
+        } catch (error) {
+            console.error('Ürünler yüklenirken hata oluştu:', error);
+            document.getElementById('product-grid').innerHTML = '<div class="error">Ürünler yüklenirken bir hata oluştu.</div>';
+            document.getElementById('product-count').textContent = '0 ürün bulundu';
+        }
+    });
+    </script>
 </body>
 </html> 
