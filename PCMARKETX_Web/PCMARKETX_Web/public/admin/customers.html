@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteriler - PC MARKET X Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-desktop"></i>
+                    <span>PC MARKET X</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar">A</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">Admin</div>
+                    <div class="sidebar-user-role">Yönetici</div>
+                </div>
+            </div>
+            <div class="sidebar-nav">
+                <a href="index.html" class="sidebar-nav-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="products.html" class="sidebar-nav-item">
+                    <i class="fas fa-box"></i>
+                    <span>Ürünler</span>
+                </a>
+                <a href="categories.html" class="sidebar-nav-item">
+                    <i class="fas fa-tags"></i>
+                    <span>Kategoriler</span>
+                </a>
+                <a href="orders.html" class="sidebar-nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Siparişler</span>
+                </a>
+                <a href="customers.html" class="sidebar-nav-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Müşteriler</span>
+                </a>
+                <a href="settings.html" class="sidebar-nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Ayarlar</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="header-title">Müşteriler</h1>
+                <div class="header-actions">
+                    <button id="exportCustomers" class="btn btn-light">
+                        <i class="fas fa-file-export"></i> Dışa Aktar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filter Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Filtreler</div>
+                    <button id="resetFilters" class="btn btn-sm btn-light">
+                        <i class="fas fa-sync-alt"></i> Sıfırla
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Kayıt Tarihi</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="date" id="filterDateFrom" class="form-control">
+                                <input type="date" id="filterDateTo" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sipariş Sayısı</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" id="filterOrdersMin" class="form-control" placeholder="Min">
+                                <input type="number" id="filterOrdersMax" class="form-control" placeholder="Max">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Arama</label>
+                            <input type="text" id="filterSearch" class="form-control" placeholder="Ad, e-posta veya telefon ara...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customers Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Müşteri Listesi</div>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table" id="customersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Ad Soyad</th>
+                                    <th>E-posta</th>
+                                    <th>Telefon</th>
+                                    <th>Kayıt Tarihi</th>
+                                    <th>Sipariş Sayısı</th>
+                                    <th>Toplam Harcama</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Müşteriler burada listelenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <div class="pagination-list" id="customersPagination">
+                            <!-- Sayfalama burada oluşturulacak -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Customer Detail Modal -->
+    <div class="modal" id="customerDetailModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Müşteri Detayı</h3>
+                    <button class="modal-close" data-dismiss="modal">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="tabs">
+                        <div class="tabs-header">
+                            <button class="tab-btn active" data-tab="customerInfo">Müşteri Bilgileri</button>
+                            <button class="tab-btn" data-tab="customerOrders">Siparişler</button>
+                            <button class="tab-btn" data-tab="customerAddresses">Adresler</button>
+                        </div>
+                        
+                        <!-- Customer Info Tab -->
+                        <div class="tab-content active" id="customerInfo">
+                            <div class="customer-detail-grid">
+                                <div class="info-group">
+                                    <label>Ad Soyad:</label>
+                                    <span id="customerName"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>E-posta:</label>
+                                    <span id="customerEmail"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Telefon:</label>
+                                    <span id="customerPhone"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Kayıt Tarihi:</label>
+                                    <span id="customerRegistered"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Son Giriş:</label>
+                                    <span id="customerLastLogin"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Toplam Sipariş:</label>
+                                    <span id="customerTotalOrders"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Toplam Harcama:</label>
+                                    <span id="customerTotalSpent"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Ortalama Sipariş Tutarı:</label>
+                                    <span id="customerAverageOrder"></span>
+                                </div>
+                                <div class="info-group">
+                                    <label>Son Sipariş Tarihi:</label>
+                                    <span id="customerLastOrder"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Orders Tab -->
+                        <div class="tab-content" id="customerOrders">
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sipariş ID</th>
+                                            <th>Tarih</th>
+                                            <th>Toplam</th>
+                                            <th>Durum</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customerOrdersList">
+                                        <!-- Müşteri siparişleri burada listelenecek -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Addresses Tab -->
+                        <div class="tab-content" id="customerAddresses">
+                            <div style="display: flex; gap: 20px;">
+                                <div style="flex: 1;">
+                                    <h4 style="margin-bottom: 10px;">Fatura Adresi</h4>
+                                    <div id="billingAddress" class="card" style="padding: 15px;"></div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin-bottom: 10px;">Teslimat Adresi</h4>
+                                    <div id="shippingAddress" class="card" style="padding: 15px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-light" data-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification-container"></div>
+    
+    <script src="../js/admin/admin.js"></script>
+    <script src="../js/admin/admin-api.js"></script>
+    <script src="../js/admin/admin-customers.js"></script>
+</body>
+</html> 

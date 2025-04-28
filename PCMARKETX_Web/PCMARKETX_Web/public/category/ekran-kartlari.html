@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekran Kartları - PC MARKET X</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/category.css">
+    <link rel="stylesheet" href="/css/notification.css">
+</head>
+<body>
+    <!-- Navbar Container -->
+    <div id="navbar-container"></div>
+
+    <main>
+        
+        <!-- Breadcrumb Navigation -->
+        <div class="breadcrumb-container">
+            <div class="container">
+                <ul class="breadcrumb">
+                    <li><a href="/"><i class="fas fa-home"></i> Anasayfa</a></li>
+                    <li><span>Ekran Kartları</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Category Content -->
+        <section class="category-content">
+            <div class="container">
+                <div class="category-grid">
+                    <!-- Filters -->
+                    <div class="category-filters">
+                        <div class="filter-section">
+                            <h3>Sıralama</h3>
+                            <div class="filter-options">
+                                <select id="sort-options">
+                                    <option value="popular">En Popüler</option>
+                                    <option value="newest">En Yeniler</option>
+                                    <option value="price-asc">Fiyat (Artan)</option>
+                                    <option value="price-desc">Fiyat (Azalan)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <h3>Markalar</h3>
+                            <div class="filter-options" id="brand-filters">
+                                <div class="filter-checkbox">
+                                    <input type="checkbox" id="brand-all" checked>
+                                    <label for="brand-all">Tümü</label>
+                                </div>
+                                <!-- Markalar JavaScript ile yüklenecek -->
+                            </div>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <h3>Fiyat Aralığı</h3>
+                            <div class="filter-options">
+                                <div class="price-range">
+                                    <input type="number" id="price-min" placeholder="Min">
+                                    <span>-</span>
+                                    <input type="number" id="price-max" placeholder="Max">
+                                    <button id="price-filter-btn">Uygula</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary apply-filters">Filtreleri Uygula</button>
+                        <button class="btn btn-outline clear-filters">Filtreleri Temizle</button>
+                    </div>
+                    
+                    <!-- Products -->
+                    <div class="category-products">
+                        <div class="product-count">
+                            <span id="product-count">0 ürün bulundu</span>
+                        </div>
+                        
+                        <div class="product-grid" id="product-grid">
+                            <!-- Ürünler JavaScript ile yüklenecek -->
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="pagination" id="pagination">
+                            <button class="pagination-prev"><i class="fas fa-chevron-left"></i></button>
+                            <div class="pagination-numbers">
+                                <!-- Sayfa numaraları JavaScript ile yüklenecek -->
+                            </div>
+                            <button class="pagination-next"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>PC MARKET X</h3>
+                    <p>En iyi bilgisayar parçaları ve çevre birimlerinin adresi. Kaliteli ürünler, uygun fiyatlar, hızlı kargo ve müşteri memnuniyeti.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Kategoriler</h3>
+                    <ul>
+                        <li><a href="/category/islemciler.html">İşlemciler</a></li>
+                        <li><a href="/category/ekran-kartlari.html">Ekran Kartları</a></li>
+                        <li><a href="/category/anakartlar.html">Anakartlar</a></li>
+                        <li><a href="/category/ram.html">RAM</a></li>
+                        <li><a href="/category/depolama.html">Depolama</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Bilgi</h3>
+                    <ul>
+                        <li><a href="/about-us.html">Hakkımızda</a></li>
+                        <li><a href="/contact.html">İletişim</a></li>
+                        <li><a href="/privacy-policy.html">Gizlilik Politikası</a></li>
+                        <li><a href="/terms-conditions.html">Şartlar ve Koşullar</a></li>
+                        <li><a href="/faq.html">Sıkça Sorulan Sorular</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>İletişim</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Örnek Mahallesi, Örnek Caddesi No:123, İstanbul</p>
+                    <p><i class="fas fa-phone"></i> +90 (212) 555 55 55</p>
+                    <p><i class="fas fa-envelope"></i> info@pcmarketx.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 PC MARKET X. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scripts -->
+    <script src="/js/navbar.js"></script>
+    <script src="/js/navbar-loader.js"></script>
+    <script src="/js/category.js"></script>
+    <script>
+    // Sayfanın mevcut JavaScript'lerine ek olarak
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // Ekran kartı ürünlerini API'den çekiyoruz
+            const response = await fetch('/api/products/by-category/ekran-kartlari');
+            const products = await response.json();
+            
+            // Ürün grid ve sayaçlarını buluyoruz
+            const productGrid = document.getElementById('product-grid');
+            const productCount = document.getElementById('product-count');
+            
+            // Ürünleri kontrol et
+            if (products.length === 0) {
+                productGrid.innerHTML = '<div class="no-products">Bu kategoride ürün bulunamadı.</div>';
+                productCount.textContent = '0 ürün bulundu';
+                return;
+            }
+            
+            // Ürün sayısını güncelle
+            productCount.textContent = `${products.length} ürün bulundu`;
+            
+            // Ürünleri temizle
+            productGrid.innerHTML = '';
+            
+            // Ürünleri listeleyerek gösteriyoruz
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-item';
+                
+                // Ürün özellikleri
+                const features = product.features && product.features.length > 0 
+                    ? product.features.map(feature => `<li>${feature}</li>`).join('') 
+                    : '';
+                
+                // Ürün kartı içeriğini oluşturuyoruz
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        <a href="/product/${product._id}">
+                            <img src="${product.imageUrl || '/images/placeholder.jpg'}" alt="${product.name}">
+                        </a>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">
+                            <a href="/product/${product._id}">${product.name}</a>
+                        </h3>
+                        <p class="product-brand">${product.brand || ''}</p>
+                        <div class="product-price">${product.price.toLocaleString('tr-TR')} TL</div>
+                        <div class="product-features">
+                            <ul>
+                                ${features}
+                            </ul>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-primary add-to-cart" data-product-id="${product._id}">
+                                <i class="fas fa-shopping-cart"></i> Sepete Ekle
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                productGrid.appendChild(productCard);
+            });
+            
+            // Sepete ekleme işlevi
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    
+                    // Yerel depolamadan sepet bilgilerini al
+                    let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+                    
+                    // Ürünü bul
+                    const product = products.find(p => p._id === productId);
+                    
+                    // Ürün sepete ekle
+                    cart.push({
+                        id: product._id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.imageUrl || '/images/placeholder.jpg',
+                        quantity: 1
+                    });
+                    
+                    // Sepeti güncelle
+                    localStorage.setItem('cartItems', JSON.stringify(cart));
+                    
+                    // Sepet sayısını güncelle
+                    updateCartCount();
+                    
+                    // Bildirim göster
+                    showNotification('Ürün sepete eklendi!', 'success');
+                });
+            });
+            
+            // Sepet sayısını güncelleme fonksiyonu
+            function updateCartCount() {
+                const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+                const cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement) {
+                    cartCountElement.textContent = cartItems.length;
+                }
+            }
+            
+            // Bildirim gösterme fonksiyonu
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-content">
+                        <span>${message}</span>
+                        <button class="notification-close">&times;</button>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+                
+                const closeButton = notification.querySelector('.notification-close');
+                closeButton.addEventListener('click', () => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                });
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
+            }
+            
+        } catch (error) {
+            console.error('Ürünler yüklenirken hata oluştu:', error);
+            document.getElementById('product-grid').innerHTML = '<div class="error">Ürünler yüklenirken bir hata oluştu.</div>';
+            document.getElementById('product-count').textContent = '0 ürün bulundu';
+        }
+    });
+    </script>
+</body>
+</html> 
