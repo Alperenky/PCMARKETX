@@ -1,42 +1,64 @@
 /* Profile Page Styles */
 :root {
-  --vatan-primary: #e81f2a;
-  --vatan-secondary: #333333;
-  --vatan-light-gray: #f5f5f5;
-  --vatan-gray: #e0e0e0;
-  --vatan-dark-gray: #666666;
-  --vatan-text: #333333;
-  --vatan-success: #28a745;
-  --vatan-danger: #dc3545;
+  /* Ana renk paleti */
+  --vatan-primary: #1e88e5; /* Canlı mavi */
+  --vatan-primary-dark: #1565c0; /* Koyu mavi */
+  --vatan-primary-light: #64b5f6; /* Açık mavi */
+  
+  /* Nötr tonlar */
+  --vatan-secondary: #263238; /* Koyu gri-mavi */
+  --vatan-text: #37474f; /* Ana metin rengi */
+  --vatan-text-light: #607d8b; /* Açık metin rengi */
+  --vatan-text-lighter: #90a4ae; /* Daha açık metin rengi */
+  
+  /* Arka plan tonları */
+  --vatan-light: #ffffff; /* Beyaz */
+  --vatan-light-gray: #f5f7fa; /* Açık gri-mavi */
+  --vatan-gray: #eceff1; /* Orta gri-mavi */
+  --vatan-dark-gray: #cfd8dc; /* Koyu gri-mavi */
+  --vatan-dark: #102027; /* Çok koyu gri-mavi */
+  
+  /* Aksesuar renkler */
+  --vatan-accent: #ff6d00; /* Turuncu aksesuar rengi */
+  --vatan-accent-light: #ff9e40; /* Açık turuncu */
+  
+  /* Durum renkleri */
+  --vatan-success: #43a047; /* Yeşil */
+  --vatan-danger: #e53935; /* Kırmızı */
+  --vatan-warning: #ffb300; /* Sarı */
+  --vatan-info: #039be5; /* Mavi */
 }
 
 .profile-section {
   padding: 40px 0;
   background-color: var(--vatan-light-gray);
   min-height: calc(100vh - 400px);
+  background-image: linear-gradient(135deg, var(--vatan-light-gray) 0%, var(--vatan-gray) 100%);
 }
 
 .profile-container {
   display: flex;
   gap: 30px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  background-color: var(--vatan-light);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 /* Sidebar Styles */
 .profile-sidebar {
   width: 280px;
-  background-color: var(--vatan-light-gray);
+  background-color: var(--vatan-secondary);
   padding: 30px 0;
-  border-right: 1px solid var(--vatan-gray);
+  color: var(--vatan-light);
 }
 
 .profile-user {
   text-align: center;
   padding: 0 20px 20px;
-  border-bottom: 1px solid var(--vatan-gray);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 20px;
 }
 
@@ -44,29 +66,31 @@
   width: 100px;
   height: 100px;
   margin: 0 auto 15px;
-  background-color: #fff;
+  background-color: var(--vatan-light);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--vatan-gray);
+  border: 1px solid var(--vatan-primary-light);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .profile-avatar i {
   font-size: 60px;
-  color: var(--vatan-dark-gray);
+  color: var(--vatan-primary);
 }
 
 #profile-username {
   font-size: 18px;
   margin-bottom: 5px;
-  color: var(--vatan-secondary);
+  color: var(--vatan-light);
   font-weight: 600;
 }
 
 #profile-email {
   font-size: 14px;
-  color: var(--vatan-dark-gray);
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 0;
 }
 
@@ -85,28 +109,36 @@
   display: flex;
   align-items: center;
   padding: 12px 20px;
-  color: var(--vatan-text);
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   transition: all 0.3s ease;
+  border-left: 3px solid transparent;
 }
 
 .profile-menu li a i {
-  margin-right: 10px;
+  margin-right: 12px;
   width: 20px;
   text-align: center;
+  font-size: 16px;
+  transition: transform 0.2s ease;
 }
 
 .profile-menu li.active a,
 .profile-menu li a:hover {
-  background-color: #fff;
-  color: var(--vatan-primary);
-  border-left: 3px solid var(--vatan-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--vatan-light);
+  border-left: 3px solid var(--vatan-accent);
+}
+
+.profile-menu li a:hover i {
+  transform: translateX(3px);
 }
 
 /* Content Styles */
 .profile-content {
   flex: 1;
   padding: 30px;
+  background-color: var(--vatan-light);
 }
 
 .profile-tab {
@@ -115,6 +147,12 @@
 
 .profile-tab.active {
   display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .profile-tab h2 {
@@ -124,6 +162,7 @@
   font-size: 24px;
   border-bottom: 1px solid var(--vatan-gray);
   padding-bottom: 15px;
+  font-weight: 600;
 }
 
 /* Form Styles */
@@ -157,22 +196,28 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--vatan-dark-gray);
+  color: var(--vatan-text-lighter);
+  transition: color 0.2s ease;
+}
+
+.input-with-icon:focus-within i {
+  color: var(--vatan-primary);
 }
 
 .input-with-icon input {
   width: 100%;
   padding: 12px 12px 12px 40px;
   border: 1px solid var(--vatan-gray);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 16px;
-  transition: border-color 0.3s;
+  transition: all 0.3s;
+  background-color: var(--vatan-light);
 }
 
 .input-with-icon input:focus {
   border-color: var(--vatan-primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(232, 31, 42, 0.2);
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
 }
 
 .input-with-icon .toggle-password {
@@ -183,13 +228,18 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--vatan-dark-gray);
+  color: var(--vatan-text-lighter);
+  transition: color 0.2s ease;
+}
+
+.input-with-icon .toggle-password:hover {
+  color: var(--vatan-primary);
 }
 
 .btn {
   padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.3s;
@@ -201,7 +251,9 @@
 }
 
 .btn-primary:hover {
-  background-color: #c41822;
+  background-color: var(--vatan-primary-dark);
+  box-shadow: 0 4px 10px rgba(120, 118, 123, 0.3);
+  transform: translateY(-2px);
 }
 
 /* Empty State Styles */
@@ -209,27 +261,29 @@
   text-align: center;
   padding: 40px 20px;
   background-color: var(--vatan-light-gray);
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
 }
 
 .empty-state i {
   font-size: 60px;
-  color: var(--vatan-dark-gray);
+  color: var(--vatan-primary-light);
   margin-bottom: 20px;
 }
 
 .empty-state p {
   font-size: 18px;
-  color: var(--vatan-secondary);
+  color: var(--vatan-text-light);
   margin-bottom: 20px;
 }
 
 /* Settings Section */
 .settings-section {
   background-color: var(--vatan-light-gray);
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  padding: 25px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  border-left: 3px solid var(--vatan-accent);
 }
 
 .settings-section h3 {

@@ -19,30 +19,6 @@
         <h1 class="page-title">Siparişlerim</h1>
         
         <div class="orders-container">
-          <div class="order-filters">
-            <div class="filter-group">
-              <label for="order-status">Durum:</label>
-              <select id="order-status">
-                <option value="all">Tümü</option>
-                <option value="processing">İşleme Alındı</option>
-                <option value="shipped">Kargoya Verildi</option>
-                <option value="delivered">Teslim Edildi</option>
-                <option value="cancelled">İptal Edildi</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="order-date">Tarih:</label>
-              <select id="order-date">
-                <option value="all">Tümü</option>
-                <option value="last-month">Son 1 Ay</option>
-                <option value="last-3-months">Son 3 Ay</option>
-                <option value="last-6-months">Son 6 Ay</option>
-                <option value="last-year">Son 1 Yıl</option>
-              </select>
-            </div>
-            <button class="btn btn-primary" id="apply-filters">Filtreleri Uygula</button>
-          </div>
-          
           <div class="orders-list" id="orders-list">
             <!-- Siparişler JavaScript ile yüklenecek -->
             <div class="empty-orders" id="empty-orders">

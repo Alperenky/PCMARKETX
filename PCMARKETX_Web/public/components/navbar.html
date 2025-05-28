@@ -1,0 +1,80 @@
+<!-- Main Header -->
+<header class="main-header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo">
+        <a href="/">
+          <img src="/images/logo.png" alt="PC MARKET X">
+        </a>
+      </div>
+      
+      <div class="search-box">
+        <form action="/search" method="GET" id="search-form">
+          <input type="text" name="q" placeholder="Ürün, kategori veya marka ara..." id="search-input" required>
+          <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+      </div>
+      
+      <div class="user-actions">
+        <a href="/html/cart.html" class="user-action" id="cart-link">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Sepetim</span>
+          <span class="badge" id="cart-count">0</span>
+        </a>
+        <div class="user-dropdown">
+          <a href="#" class="user-action" id="account-action">
+            <i class="fas fa-user"></i>
+            <span>Hesabım</span>
+            <i class="fas fa-chevron-down"></i>
+          </a>
+          <div class="dropdown-menu" id="user-dropdown-menu">
+            <!-- Menü içeriği updateUserStatus fonksiyonunda dinamik olarak güncellenir -->
+          </div>
+        </div>
+      </div>
+
+      <button class="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Main Navigation -->
+<nav class="main-nav">
+  <div class="container">
+    <div class="nav-list">
+      <!-- Ana Kategori Linkleri -->
+      <ul class="nav-links">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle">
+            <i class="fas fa-microchip"></i> Bilgisayar Bileşenleri
+            <i class="fas fa-chevron-down"></i>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="/category.html?cat=islemci"><i class="fas fa-microchip"></i> İşlemci</a></li>
+            <li><a href="/category.html?cat=ekran-kartlari"><i class="fas fa-tv"></i> Ekran Kartları</a></li>
+            <li><a href="/category.html?cat=anakartlar"><i class="fas fa-server"></i> Anakartlar</a></li>
+            <li><a href="/category.html?cat=ram-bellek"><i class="fas fa-memory"></i> RAM & Bellek</a></li>
+            <li><a href="/category.html?cat=depolama"><i class="fas fa-hdd"></i> Depolama</a></li>
+            <li><a href="/category.html?cat=guc-kaynaklari"><i class="fas fa-plug"></i> Güç Kaynakları</a></li>
+            <li><a href="/category.html?cat=kasalar"><i class="fas fa-desktop"></i> Bilgisayar Kasaları</a></li>
+            <li><a href="/category.html?cat=sogutma-sistemleri"><i class="fas fa-fan"></i> Soğutma Sistemleri</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle">
+            <i class="fas fa-keyboard"></i> Çevre Birimleri
+            <i class="fas fa-chevron-down"></i>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="/category.html?cat=klavyeler"><i class="fas fa-keyboard"></i> Klavyeler</a></li>
+            <li><a href="/category.html?cat=mouse"><i class="fas fa-mouse"></i> Mouse</a></li>
+            <li><a href="/category.html?cat=kulakliklar"><i class="fas fa-headphones"></i> Kulaklıklar</a></li>
+            <li><a href="/category.html?cat=monitorler"><i class="fas fa-desktop"></i> Monitörler</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

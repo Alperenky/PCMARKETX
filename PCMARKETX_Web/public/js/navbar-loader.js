@@ -9,157 +9,129 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Navbar HTML yapısını oluştur
-    const navbarHTML = `
-        
-        <!-- Main Header -->
-        <header class="main-header">
-            <div class="container">
-                <div class="header-content">
-                    <div class="logo">
-                        <a href="/">
-                            <img src="/images/logo.png" alt="PC MARKET X">
-                        </a>
-                    </div>
-                    
-                    <div class="search-box">
-                        <form action="/search" method="GET">
-                            <input type="text" name="q" placeholder="Ürün, kategori veya marka ara...">
-                            <button type="submit"><i class="fas fa-search"></i></button>
-                        </form>
-                    </div>
-                    
-                    <div class="user-actions">
-                        <a href="/favorites.html" class="user-action">
-                            <i class="fas fa-heart"></i>
-                            <span>Favorilerim</span>
-                            <span class="badge" id="favorites-count">0</span>
-                        </a>
-                        <a href="/cart.html" class="user-action">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Sepetim</span>
-                            <span class="badge" id="cart-count">0</span>
-                        </a>
-                        <div class="user-dropdown">
-                            <a href="#" class="user-action" id="account-action">
-                                <i class="fas fa-user"></i>
-                                <span>Hesabım</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </a>
-                            <div class="dropdown-menu" id="user-dropdown-menu">
-                                <!-- Menü içeriği updateUserStatus fonksiyonunda dinamik olarak güncellenir -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <button class="mobile-menu-toggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
+    // İlk olarak kök dizindeki navbar.html dosyasını yüklemeyi dene
+    loadNavbar('/navbar.html')
+        .catch(() => {
+            // Eğer kök dizinde bulamazsa /html/ klasöründen yükleme yap
+            return loadNavbar('/html/navbar.html');
+        })
+        .catch(error => {
+            console.error('Navbar yüklenirken hata oluştu:', error);
+            navbarContainer.innerHTML = `
+                <div class="error-navbar">
+                    <p>Menü yüklenirken bir hata oluştu.</p>
                 </div>
-            </div>
-        </header>
-        
-        <!-- Main Navigation -->
-        <nav class="main-nav">
-            <div class="container">
-                <div class="nav-list">
-                    <div class="mega-menu-container">
-                        <a href="#" class="category-toggle">
-                            <i class="fas fa-bars"></i>
-                            <span>Kategoriler</span>
-                        </a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-content">
-                                <div class="mega-menu-column">
-                                    <h3>Bilgisayar Bileşenleri</h3>
-                                    <ul>
-                                        <li><a href="/category/islemciler.html"><i class="fas fa-microchip"></i> İşlemciler</a></li>
-                                        <li><a href="/category/ekran-kartlari.html"><i class="fas fa-tv"></i> Ekran Kartları</a></li>
-                                        <li><a href="/category/anakartlar.html"><i class="fas fa-server"></i> Anakartlar</a></li>
-                                        <li><a href="/category/ram.html"><i class="fas fa-memory"></i> RAM</a></li>
-                                        <li><a href="/category/depolama.html"><i class="fas fa-hdd"></i> Depolama</a></li>
-                                        <li><a href="/category/guc-kaynaklari.html"><i class="fas fa-plug"></i> Güç Kaynakları</a></li>
-                                    </ul>
-                                </div>
-                                <div class="mega-menu-column">
-                                    <h3>Bilgisayar Donanımları</h3>
-                                    <ul>
-                                        <li><a href="/category/kasalar.html"><i class="fas fa-desktop"></i> Bilgisayar Kasaları</a></li>
-                                        <li><a href="/category/sogutma-sistemleri.html"><i class="fas fa-fan"></i> Soğutma Sistemleri</a></li>
-                                        <li><a href="/category/monitorler.html"><i class="fas fa-desktop"></i> Monitörler</a></li>
-                                    </ul>
-                                </div>
-                                <div class="mega-menu-column">
-                                    <h3>Çevre Birimleri</h3>
-                                    <ul>
-                                        <li><a href="/category/klavyeler.html"><i class="fas fa-keyboard"></i> Klavyeler</a></li>
-                                        <li><a href="/category/mouse.html"><i class="fas fa-mouse"></i> Mouse</a></li>
-                                        <li><a href="/category/kulakliklar.html"><i class="fas fa-headphones"></i> Kulaklıklar</a></li>
-
-                                    </ul>
-                                </div>
-                                </div>
-                        </div>
-                    </div>
-                    <ul class="nav-links">
-                        <li><a href="/bestsellers.html"><i class="fas fa-fire"></i> Çok Satanlar</a></li>
-                        <li><a href="/new-products.html"><i class="fas fa-bolt"></i> Yeni Ürünler</a></li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    `;
-    
-    // Navbar içeriğini yükle
-    navbarContainer.innerHTML = navbarHTML;
-    
-    // Kategori mega menünün açılıp kapanması için olay dinleyici ekle
-    const categoryToggle = document.querySelector('.category-toggle');
-    const megaMenu = document.querySelector('.mega-menu');
-    
-    if (categoryToggle && megaMenu) {
-        categoryToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            megaMenu.classList.toggle('active');
+            `;
         });
         
-        // Sayfa herhangi bir yerine tıklandığında mega menüyü kapat
-        document.addEventListener('click', function(e) {
-            if (!categoryToggle.contains(e.target) && !megaMenu.contains(e.target)) {
-                megaMenu.classList.remove('active');
-            }
-        });
-
-        // Mega menü üzerine gelindiğinde aç, çıkınca kapat
-        const megaMenuContainer = document.querySelector('.mega-menu-container');
-        if (megaMenuContainer) {
-            megaMenuContainer.addEventListener('mouseenter', function() {
-                megaMenu.classList.add('active');
+    // Navbar yükleme fonksiyonu
+    function loadNavbar(path) {
+        return fetch(path)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Navbar ${path} konumundan yüklenemedi`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                // HTML içeriğini navbar container'a ekle
+                navbarContainer.innerHTML = html;
+                
+                // Sepet bağlantısına özel tıklama olayı ekle
+                const cartLink = document.getElementById('cart-link');
+                if (cartLink) {
+                    cartLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        window.location.href = '/html/cart.html';
+                    });
+                }
+                
+                // Dropdown menülerin açılıp kapanması için olay dinleyicileri ekle
+                const dropdowns = document.querySelectorAll('.dropdown');
+                
+                dropdowns.forEach(dropdown => {
+                    const toggle = dropdown.querySelector('.dropdown-toggle');
+                    const menu = dropdown.querySelector('.dropdown-menu');
+                    
+                    if (toggle && menu) {
+                        // Tıklama ile açma/kapama
+                        toggle.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            dropdown.classList.toggle('active');
+                        });
+                        
+                        // Hover ile açma/kapama
+                        dropdown.addEventListener('mouseenter', function() {
+                            this.classList.add('active');
+                        });
+                        
+                        dropdown.addEventListener('mouseleave', function() {
+                            this.classList.remove('active');
+                        });
+                    }
+                });
+                
+                // Mobil menü açma/kapama
+                const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                const mainNav = document.querySelector('.main-nav');
+                
+                if (mobileMenuToggle && mainNav) {
+                    mobileMenuToggle.addEventListener('click', function() {
+                        mainNav.classList.toggle('active');
+                    });
+                }
+                
+                // Sepet ve favoriler sayısını localStorage'dan yükle
+                updateCartCount();
+                updateFavoritesCount();
+                
+                // Kullanıcı durumunu güncelle
+                updateUserStatus();
+                
+                // Arama formu event listener'ı ekle
+                setupSearchForm();
+                
+                console.log('Navbar başarıyla yüklendi:', path);
             });
-            
-            megaMenuContainer.addEventListener('mouseleave', function() {
-                megaMenu.classList.remove('active');
-            });
-        }
     }
-    
-    // Mobil menü açma/kapama
-    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-    const mainNav = document.querySelector('.main-nav');
-    
-    if (mobileMenuToggle && mainNav) {
-        mobileMenuToggle.addEventListener('click', function() {
-            mainNav.classList.toggle('active');
-        });
-    }
-    
-    // Sepet ve favoriler sayısını localStorage'dan yükle
-    updateCartCount();
-    updateFavoritesCount();
-    
-    // Kullanıcı durumunu güncelle
-    updateUserStatus();
 });
+
+/**
+ * Arama formu
+ */
+function setupSearchForm() {
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    
+    if (searchForm && searchInput) {
+        // Sayfada zaten bir arama anahtar kelimesi varsa input'a yerleştir
+        const urlParams = new URLSearchParams(window.location.search);
+        const keyword = urlParams.get('q');
+        if (keyword) {
+            searchInput.value = keyword;
+        }
+        
+        // Form gönderildiğinde
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Boş arama yapılmasını engelle
+            if (!searchInput.value.trim()) {
+                // Bildirim göster
+                if (typeof showNotification === 'function') {
+                    showNotification('Lütfen arama yapmak için bir şeyler yazın.', 'warning');
+                }
+                return;
+            }
+            
+            // Konsola log
+            console.log(`Arama yapılıyor: ${searchInput.value}`);
+            
+            // Arama sayfasına yönlendir
+            window.location.href = `/search?q=${encodeURIComponent(searchInput.value.trim())}`;
+        });
+    }
+}
 
 /**
  * Sepet sayısını günceller
@@ -167,8 +139,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function updateCartCount() {
     const cartCountElement = document.getElementById('cart-count');
     if (cartCountElement) {
-        let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-        cartCountElement.textContent = cartItems.length;
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const count = cart.reduce((total, item) => total + item.quantity, 0);
+        cartCountElement.textContent = count;
     }
 }
 
@@ -176,10 +149,10 @@ function updateCartCount() {
  * Favoriler sayısını günceller
  */
 function updateFavoritesCount() {
-    const favoritesCountElement = document.getElementById('favorites-count');
-    if (favoritesCountElement) {
+    const favoritesCountDropdown = document.getElementById('favorites-count-dropdown');
+    if (favoritesCountDropdown) {
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-        favoritesCountElement.textContent = favorites.length;
+        favoritesCountDropdown.textContent = favorites.length;
     }
 }
 
@@ -210,10 +183,18 @@ function updateUserStatus() {
         
         // Dropdown menüyü güncelle - giriş yapılmış
         dropdownMenu.innerHTML = `
-            <a href="/profile">Profilim</a>
-            <a href="/orders">Siparişlerim</a>
-            <a href="#" id="logout-link">Çıkış Yap</a>
+            <a href="/profile"><i class="fas fa-user"></i> Profilim</a>
+            <a href="/orders"><i class="fas fa-box"></i> Siparişlerim</a>
+            <a href="/favorites.html"><i class="fas fa-heart"></i> Favorilerim <span class="badge" id="favorites-count-dropdown">0</span></a>
+            <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a>
         `;
+        
+        // Favoriler sayısını dropdown menüdeki badge'e de ekle
+        const favoritesCountDropdown = dropdownMenu.querySelector('#favorites-count-dropdown');
+        if (favoritesCountDropdown) {
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            favoritesCountDropdown.textContent = favorites.length;
+        }
         
         // Çıkış yapma işlemi
         const logoutLink = dropdownMenu.querySelector('#logout-link');
@@ -237,8 +218,8 @@ function updateUserStatus() {
         
         // Dropdown menüyü güncelle - giriş yapılmamış
         dropdownMenu.innerHTML = `
-            <a href="/login">Giriş Yap</a>
-            <a href="/register">Kayıt Ol</a>
+            <a href="/login"><i class="fas fa-sign-in-alt"></i> Giriş Yap</a>
+            <a href="/register"><i class="fas fa-user-plus"></i> Kayıt Ol</a>
         `;
     }
     
@@ -259,7 +240,15 @@ function setupUserDropdown() {
     // Hesabım butonuna tıklandığında dropdown'ı aç/kapat
     accountAction.addEventListener('click', function(e) {
         e.preventDefault();
+        e.stopPropagation(); // Event propagation'ı durdur
         dropdownMenu.classList.toggle('active');
+    });
+    
+    // Dropdown menü içindeki linklere tıklandığında menüyü kapat
+    dropdownMenu.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') {
+            dropdownMenu.classList.remove('active');
+        }
     });
     
     // Sayfa herhangi bir yerine tıklandığında dropdown'ı kapat

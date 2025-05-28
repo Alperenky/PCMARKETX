@@ -11,7 +11,10 @@ const {
   getUserAddresses,
   addUserAddress,
   updateUserAddress,
-  deleteUserAddress
+  deleteUserAddress,
+  getUserFavorites,
+  addToFavorites,
+  removeFromFavorites
 } = require('../controllers/userController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -44,5 +47,10 @@ router.route('/')
 // @route   DELETE /api/users/:id
 router.route('/:id')
   .delete(protect, admin, deleteUser);
+
+// Favoriler route'ları
+router.get('/favorites', protect, getUserFavorites);
+router.post('/favorites', protect, addToFavorites);
+router.delete('/favorites/:productId', protect, removeFromFavorites);
 
 module.exports = router; 

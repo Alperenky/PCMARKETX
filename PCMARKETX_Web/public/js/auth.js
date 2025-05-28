@@ -92,9 +92,16 @@ async function handleLoginSubmit(e) {
     // Başarılı bildirim göster
     showNotification('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
     
-    // Ana sayfaya yönlendir
+    // Eğer daha önce favorilere eklemek isterken login sayfasına yönlendirildiyse
+    // o sayfaya geri dön, yoksa ana sayfaya yönlendir
+    const redirectURL = localStorage.getItem('redirectAfterLogin') || '/';
+    
+    // Yönlendirme URL'sini temizle
+    localStorage.removeItem('redirectAfterLogin');
+    
+    // İlgili sayfaya yönlendir
     setTimeout(() => {
-      window.location.href = '/';
+      window.location.href = redirectURL;
     }, 2000);
     
   } catch (error) {

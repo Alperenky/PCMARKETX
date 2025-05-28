@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorilerim - PCMARKETX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/favorites.css">
+    <link rel="stylesheet" href="/css/notification.css">
+    <link rel="stylesheet" href="/css/chatbot.css">
+</head>
+<body>
+    <!-- Navbar buraya gelecek -->
+    <div id="navbar-container"></div>
+
+    <main class="favorites-container">
+        <div class="favorites-header">
+            <h1><i class="fas fa-heart"></i> Favorilerim</h1>
+            <p class="favorites-count">0 ürün</p>
+        </div>
+
+        <div class="favorites-content">
+            <div class="favorites-grid">
+                <!-- Ürünler JavaScript ile buraya eklenecek -->
+            </div>
+
+            <div class="empty-favorites" style="display: none;">
+                <i class="far fa-heart"></i>
+                <h2>Favori Ürününüz Bulunmamaktadır</h2>
+                <p>Beğendiğiniz ürünleri favorilere ekleyerek daha sonra kolayca ulaşabilirsiniz.</p>
+                <a href="/" class="btn btn-primary">Alışverişe Başla</a>
+            </div>
+
+            <div class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Favorileriniz yükleniyor...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Önce jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Sonra kendi script'lerimiz -->
+    <script src="/js/navbar-loader.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/favorites.js"></script>
+    <script src="/js/chatbot.js"></script>
+</body>
+</html> 

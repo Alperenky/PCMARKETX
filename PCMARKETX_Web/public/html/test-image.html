@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resim Testi</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .image-test {
+      margin-bottom: 30px;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    img {
+      max-width: 100%;
+      border: 1px dashed red;
+      display: block;
+      margin: 10px 0;
+    }
+    h2 {
+      color: #333;
+    }
+    .url {
+      font-family: monospace;
+      background-color: #f5f5f5;
+      padding: 5px;
+      margin: 5px 0;
+      word-break: break-all;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    #serverInfo {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Resim Erişim Testi</h1>
+  
+  <div class="image-test">
+    <h2>Direkt uploads yoluyla erişim</h2>
+    <div class="url">/uploads/image-1747564138424-715610307.png</div>
+    <img src="/uploads/image-1747564138424-715610307.png" alt="Direkt Uploads">
+  </div>
+  
+  <div class="image-test">
+    <h2>Mutlak URL ile erişim</h2>
+    <div class="url">http://localhost:5002/uploads/image-1747564138424-715610307.png</div>
+    <img src="http://localhost:5002/uploads/image-1747564138424-715610307.png" alt="Mutlak URL">
+  </div>
+  
+  <div class="image-test">
+    <h2>Public klasörü üzerinden</h2>
+    <div class="url">/public/uploads/image-1747564138424-715610307.png</div>
+    <img src="/public/uploads/image-1747564138424-715610307.png" alt="Public Klasörü">
+  </div>
+  
+  <div class="image-test">
+    <h2>Başka bir resim dosyası (Statik)</h2>
+    <div class="url">/images/slider/rtx4090.png</div>
+    <img src="/images/slider/rtx4090.png" alt="Statik Resim">
+  </div>
+  
+  <div class="image-test">
+    <h2>Özel Endpoint ile Erişim</h2>
+    <div class="url">/direct-file/image-1747564138424-715610307.png</div>
+    <img src="/direct-file/image-1747564138424-715610307.png" alt="Özel Endpoint">
+    <button onclick="fetchTestUploads()">Uploads Klasörünü Test Et</button>
+  </div>
+  
+  <div id="serverInfo"></div>
+  
+  <script>
+    // Resim yükleme hatalarını yakala
+    document.querySelectorAll('img').forEach(img => {
+      img.onerror = function() {
+        console.error('Resim yüklenirken hata:', this.src);
+        this.style.backgroundColor = '#ffdddd';
+        this.style.padding = '20px';
+        this.style.height = '100px';
+        this.style.width = '100%';
+        this.alt = 'YÜKLENEMEDI: ' + this.src;
+        this.src = '';
+      };
+      
+      img.onload = function() {
+        console.log('Resim başarıyla yüklendi:', this.src);
+        this.style.borderColor = 'green';
+      };
+    });
+
+    // Sayfanın yüklendiğini kontrol et
+    window.onload = function() {
+      console.log('Sayfa yüklendi, Network sekmesini kontrol et');
+      fetchTestUploads();
+    };
+    
+    // Sunucu bilgilerini getir
+    async function fetchTestUploads() {
+      try {
+        const response = await fetch('/test-uploads');
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        let html = '<h3>Sunucu Bilgileri</h3>';
+        html += `<p>Uploads klasörü: ${data.uploadsDir}</p>`;
+        html += `<p>Klasör varlığı: ${data.dirExists ? 'VAR' : 'YOK'}</p>`;
+        html += `<p>Klasör izinleri: ${data.dirPermissions}</p>`;
+        
+        html += '<h3>Dosyalar</h3>';
+        if (data.files && data.files.length > 0) {
+          html += '<ul>';
+          data.files.forEach(file => {
+            html += `<li>
+              <strong>${file.fileName}</strong><br>
+              URL: <a href="${file.url}" target="_blank">${file.url}</a><br>
+              Tam yol: ${file.fullPath}<br>
+              Boyut: ${file.stats.size} byte<br>
+              İzinler: ${file.stats.mode.toString(8)}
+            </li>`;
+          });
+          html += '</ul>';
+        } else {
+          html += '<p>Klasörde dosya bulunamadı.</p>';
+        }
+        
+        document.getElementById('serverInfo').innerHTML = html;
+      } catch (error) {
+        console.error('Uploads testi hatası:', error);
+        document.getElementById('serverInfo').innerHTML = `<p>Hata: ${error.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html> 

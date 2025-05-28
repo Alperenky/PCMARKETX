@@ -1,19 +1,44 @@
 // Cart functionality
 document.addEventListener('DOMContentLoaded', function() {
+  // Ana sayfadaki slider, popüler ürünler veya yeni ürün içeriklerini kaldır
+  // Bunlar ana sayfaya özel içeriklerdir, sepet sayfasında olmamalıdır
+  removeHomePageContent();
+  
   // Load navbar
   if (document.getElementById('navbar-container')) {
     fetch('/components/navbar.html')
-      .then(response => response.text())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Navbar yüklenirken bir hata oluştu');
+        }
+        return response.text();
+      })
       .then(data => {
         document.getElementById('navbar-container').innerHTML = data;
         
-        // Initialize navbar functionality after loading
-        if (typeof initNavbar === 'function') {
-          initNavbar();
+        // Sepet bağlantısına özel tıklama olayı ekle
+        const cartLink = document.getElementById('cart-link');
+        if (cartLink) {
+          cartLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/html/cart.html';
+          });
         }
         
-        // Update cart count
+        // Dropdown menülerin açılıp kapanması için olay dinleyicileri ekle
+        setupDropdowns();
+        
+        // Kullanıcı durumunu güncelle
+        if (typeof updateUserStatus === 'function') {
+          updateUserStatus();
+        }
+        
+        // Sepet sayısını güncelle
         updateCartCount();
+      })
+      .catch(error => {
+        console.error('Navbar yüklenirken hata:', error);
+        document.getElementById('navbar-container').innerHTML = '<div class="error">Menü yüklenemedi</div>';
       });
   }
   
@@ -27,6 +52,84 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('apply-coupon').addEventListener('click', applyCoupon);
   document.getElementById('checkout-btn').addEventListener('click', proceedToCheckout);
 });
+
+// Dropdown menüleri kurma
+function setupDropdowns() {
+  const dropdowns = document.querySelectorAll('.dropdown');
+    
+  dropdowns.forEach(dropdown => {
+    const toggle = dropdown.querySelector('.dropdown-toggle');
+    const menu = dropdown.querySelector('.dropdown-menu');
+    
+    // Tıklama ile açma/kapama
+    if (toggle) {
+      toggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdown.classList.toggle('active');
+      });
+    }
+    
+    // Hover ile açma/kapama
+    dropdown.addEventListener('mouseenter', function() {
+      this.classList.add('active');
+    });
+    
+    dropdown.addEventListener('mouseleave', function() {
+      this.classList.remove('active');
+    });
+  });
+  
+  // Mobil menü açma/kapama
+  const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+  const mainNav = document.querySelector('.main-nav');
+  
+  if (mobileMenuToggle && mainNav) {
+    mobileMenuToggle.addEventListener('click', function() {
+      mainNav.classList.toggle('active');
+    });
+  }
+}
+
+// Ana sayfa içeriklerini temizleme fonksiyonu
+function removeHomePageContent() {
+  // Ana sayfaya özel bölümleri seçme ve silme
+  const slidersToRemove = document.querySelectorAll('.modern-hero-section, .modern-slider-wrapper');
+  const sectionsToRemove = document.querySelectorAll('.popular-products, .new-products, .advantages');
+  
+  // Slider ve modern hero bölümlerini kaldırma
+  slidersToRemove.forEach(element => {
+    if (element && element.parentNode) {
+      element.parentNode.removeChild(element);
+    }
+  });
+  
+  // Popüler ürünler, yeni ürünler ve avantajlar bölümlerini kaldırma
+  sectionsToRemove.forEach(element => {
+    if (element && element.parentNode) {
+      element.parentNode.removeChild(element);
+    }
+  });
+  
+  // Ana sayfa JS dosyalarının yüklenmesini engelleme
+  // Modern slider, yeni ürünler ve popüler ürünler JS dosyalarını yüklememek için
+  // bu dosyalara ait script elementlerini kaldırıyoruz
+  const scriptsToRemove = Array.from(document.querySelectorAll('script')).filter(script => {
+    const src = script.getAttribute('src') || '';
+    return src.includes('modern-slider.js') || 
+           src.includes('featured-products.js') || 
+           src.includes('new-products.js') ||
+           src.includes('main.js');
+  });
+  
+  scriptsToRemove.forEach(script => {
+    if (script && script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+  });
+  
+  // Sayfa başlığını doğru şekilde ayarlama
+  document.title = "Sepetim - PC MARKET X";
+}
 
 // Cart data structure
 let cart = [];
@@ -69,7 +172,9 @@ function renderCart() {
     const cartItem = document.createElement('div');
     cartItem.className = 'cart-item';
     cartItem.innerHTML = `
-      <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+      <div class="cart-item-image">
+        <img src="${item.image}" alt="${item.name}" class="product-image">
+      </div>
       <div class="cart-item-details">
         <h3 class="cart-item-title">${item.name}</h3>
         <div class="cart-item-price">${formatPrice(item.price)} ₺</div>
@@ -79,6 +184,7 @@ function renderCart() {
             <input type="number" class="quantity-input" value="${item.quantity}" min="1" max="99" data-index="${index}">
             <button class="quantity-btn plus" data-index="${index}">+</button>
           </div>
+          <div class="item-total">${formatPrice(item.price * item.quantity)} ₺</div>
           <div class="remove-item" data-index="${index}">
             <i class="fas fa-trash-alt"></i> Kaldır
           </div>
@@ -153,11 +259,17 @@ function updateQuantity(event) {
 // Remove item from cart
 function removeItem(event) {
   const index = event.target.closest('.remove-item').dataset.index;
+  // Silinen ürün bilgisini tutuyoruz
+  const removedItem = cart[index];
+  
   cart.splice(index, 1);
   saveCart();
   renderCart();
   updateCartSummary();
   updateCartCount();
+  
+  // Silme animasyonu sonrası bildirim gösterme
+  showNotification(`${removedItem.name} sepetten çıkarıldı`, 'info');
 }
 
 // Update cart summary
@@ -184,7 +296,7 @@ function updateCartSummary() {
     const minAmount = appliedCoupon.minAmount;
     appliedCoupon = null;
     document.getElementById('coupon-message').textContent = `Kupon için minimum sepet tutarı: ${minAmount} ₺`;
-    document.getElementById('coupon-message').style.color = '#e81f2a';
+    document.getElementById('coupon-message').style.color = '#78767b';
   }
   
   // Calculate total
@@ -205,6 +317,19 @@ function updateCartSummary() {
   
   // Enable/disable checkout button
   checkoutButton.disabled = cart.length === 0;
+  
+  // Kargo bilgisi güncelleme
+  const freeShippingInfo = document.getElementById('free-shipping-info');
+  if (freeShippingInfo) {
+    if (subtotal >= SHIPPING_THRESHOLD) {
+      freeShippingInfo.textContent = 'Ücretsiz kargo kazandınız!';
+      freeShippingInfo.classList.add('success');
+    } else {
+      const remaining = SHIPPING_THRESHOLD - subtotal;
+      freeShippingInfo.textContent = `${formatPrice(remaining)} ₺ daha ekleyin, ücretsiz kargo kazanın!`;
+      freeShippingInfo.classList.remove('success');
+    }
+  }
 }
 
 // Apply coupon
@@ -215,7 +340,7 @@ function applyCoupon() {
   
   if (!couponCode) {
     couponMessage.textContent = 'Lütfen bir kupon kodu girin';
-    couponMessage.style.color = '#e81f2a';
+    couponMessage.style.color = '#78767b';
     return;
   }
   
@@ -229,7 +354,7 @@ function applyCoupon() {
         
         if (subtotal < appliedCoupon.minAmount) {
           couponMessage.textContent = `Bu kupon için minimum sepet tutarı: ${appliedCoupon.minAmount} ₺`;
-          couponMessage.style.color = '#e81f2a';
+          couponMessage.style.color = '#78767b';
           appliedCoupon = null;
         } else {
           couponMessage.textContent = `%${Math.round(appliedCoupon.discount * 100)} indirim uygulandı!`;
@@ -237,7 +362,7 @@ function applyCoupon() {
         }
       } else {
         couponMessage.textContent = data.message || 'Geçersiz kupon kodu';
-        couponMessage.style.color = '#e81f2a';
+        couponMessage.style.color = '#78767b';
       }
       
       updateCartSummary();
@@ -245,7 +370,7 @@ function applyCoupon() {
     .catch(error => {
       console.error('Kupon doğrulama hatası:', error);
       couponMessage.textContent = 'Kupon doğrulanırken bir hata oluştu';
-      couponMessage.style.color = '#e81f2a';
+      couponMessage.style.color = '#78767b';
     });
 }
 
@@ -261,6 +386,12 @@ function updateCartCount() {
   if (cartCountElement) {
     const count = cart.reduce((total, item) => total + item.quantity, 0);
     cartCountElement.textContent = count;
+    
+    // Animasyon ekle
+    cartCountElement.classList.add('pulse');
+    setTimeout(() => {
+      cartCountElement.classList.remove('pulse');
+    }, 500);
   }
 }
 
@@ -292,6 +423,10 @@ function loadRecommendedProducts() {
         productCard.innerHTML = `
           <div class="product-image">
             <img src="${product.image}" alt="${product.name}">
+            <div class="product-badges">
+              ${product.isNew ? '<span class="badge new">Yeni</span>' : ''}
+              ${product.discount > 0 ? `<span class="badge discount">%${product.discount}</span>` : ''}
+            </div>
             <div class="product-actions">
               <button class="add-to-cart" data-id="${product._id}" data-name="${product.name}" data-price="${product.price}" data-image="${product.image}">
                 <i class="fas fa-shopping-cart"></i> Sepete Ekle
@@ -303,7 +438,11 @@ function loadRecommendedProducts() {
           </div>
           <div class="product-info">
             <h3 class="product-title">${product.name}</h3>
-            <div class="product-price">${formatPrice(product.price)} ₺</div>
+            <div class="product-price">
+              ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₺</span>` : ''}
+              <span class="current-price">${formatPrice(product.price)} ₺</span>
+            </div>
+            ${product.stock <= 5 ? `<div class="stock-info">Son ${product.stock} ürün!</div>` : ''}
           </div>
         `;
         
@@ -315,6 +454,9 @@ function loadRecommendedProducts() {
       addToCartButtons.forEach(button => {
         button.addEventListener('click', addToCart);
       });
+      
+      // Favori butonlarına olay dinleyicileri ekle
+      setupFavoriteButtons();
     })
     .catch(error => {
       console.error('Önerilen ürünleri yükleme hatası:', error);
@@ -336,6 +478,7 @@ function addToCart(event) {
   if (existingItemIndex !== -1) {
     // Increase quantity if product is already in cart
     cart[existingItemIndex].quantity++;
+    showNotification(`${productName} sepetinizdeki miktarı artırıldı!`, 'success');
   } else {
     // Add new product to cart
     cart.push({
@@ -345,6 +488,7 @@ function addToCart(event) {
       image: productImage,
       quantity: 1
     });
+    showNotification(`${productName} sepetinize eklendi!`, 'success');
   }
   
   // Save cart and update UI
@@ -352,9 +496,40 @@ function addToCart(event) {
   renderCart();
   updateCartSummary();
   updateCartCount();
-  
-  // Show success message
-  showNotification(`${productName} sepete eklendi!`, 'success');
+}
+
+// Setup favorite buttons
+function setupFavoriteButtons() {
+  document.querySelectorAll('.add-to-favorites').forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const productId = this.dataset.id;
+      const productName = this.dataset.name || 'Ürün';
+      const icon = this.querySelector('i');
+      const isFavorite = this.classList.contains('active');
+      
+      // Kullanıcı giriş yapmış mı kontrol et
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || sessionStorage.getItem('userInfo') || '{}');
+      if (!userInfo.token) {
+        showNotification('Favorilere eklemek için giriş yapmalısınız', 'warning');
+        return;
+      }
+      
+      if (isFavorite) {
+        // Favorilerden çıkar
+        this.classList.remove('active');
+        if (icon) icon.classList.replace('fas', 'far');
+        showNotification(`${productName} favorilerinizden çıkarıldı`, 'info');
+      } else {
+        // Favorilere ekle
+        this.classList.add('active');
+        if (icon) icon.classList.replace('far', 'fas');
+        showNotification(`${productName} favorilerinize eklendi`, 'success');
+      }
+    });
+  });
 }
 
 // Show notification
@@ -362,7 +537,7 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.innerHTML = `
-    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
     <span>${message}</span>
   `;
   

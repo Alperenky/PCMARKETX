@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kategori - PC MARKET X</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/category.css">
+  <link rel="stylesheet" href="/css/notification.css">
+  <link rel="stylesheet" href="/css/chatbot.css">
+</head>
+<body>
+  <!-- Navbar Container -->
+  <div id="navbar-container"></div>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-container">
+      <div class="container">
+          <ul class="breadcrumb">
+              <li><a href="/"><i class="fas fa-home"></i> Anasayfa</a></li>
+              <li><span id="category-breadcrumb">Kategori</span></li>
+          </ul>
+      </div>
+    </div>
+    
+    <!-- Sıralama ve Filtreleme -->
+    <div class="filter-bar">
+      <div class="container">
+        <div class="filter-bar-content">
+          <!-- Sıralama -->
+          <div class="sort-section">
+            <select id="sort-options">
+              <option value="price-asc">Fiyat (Artan)</option>
+              <option value="price-desc">Fiyat (Azalan)</option>
+            </select>
+          </div>
+          
+          <!-- Fiyat Filtresi -->
+          <div class="price-filter-section">
+            <div class="price-range">
+              <input type="number" id="price-min" placeholder="Min Fiyat">
+              <span>-</span>
+              <input type="number" id="price-max" placeholder="Max Fiyat">
+              <button id="price-filter-btn">Uygula</button>
+            </div>
+          </div>
+          
+          <!-- Filtreleri Temizle -->
+          <button class="clear-filters">Filtreleri Temizle</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <!-- Kategori Başlığı -->
+      <div class="category-header">
+        <h1 id="category-title">Kategori</h1>
+        <p id="category-description">Kategori açıklaması</p>
+      </div>
+      
+      <!-- Alt kategori bölümü (JavaScript ile görünürlüğü kontrol edilecek) -->
+      <section id="subcategory-section" style="display: none;">
+        <h3>Alt Kategoriler</h3>
+        <div id="subcategory-filters">
+          <div class="filter-checkbox">
+            <input type="checkbox" id="subcategory-all" value="all" checked>
+            <label for="subcategory-all">Tümü</label>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Kategori İçeriği -->
+      <section class="category-content">
+        <div class="category-products">
+          <div class="product-count">
+            <span id="product-count">0 ürün bulundu</span>
+          </div>
+          
+          <div class="product-grid" id="product-grid">
+            <!-- Ürünler JavaScript ile yüklenecek -->
+            <div class="loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Ürünler yükleniyor...</p>
+            </div>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="pagination" id="pagination">
+            <button class="pagination-prev"><i class="fas fa-chevron-left"></i></button>
+            <div class="pagination-numbers">
+              <!-- Sayfa numaraları JavaScript ile yüklenecek -->
+            </div>
+            <button class="pagination-next"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Alt Kategoriler Navigasyonu - Ana kategoriler için gösterilir -->
+      <section class="subcategories-section" id="featured-subcategories" style="display: none;">
+        <h2>Öne Çıkan Alt Kategoriler</h2>
+        <div class="subcategories-grid" id="subcategories-grid">
+          <!-- Alt kategori kartları JavaScript ile yüklenecek -->
+        </div>
+      </section>
+    </div>
+  </main>
+  
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3>PC MARKET X</h3>
+          <p>En iyi bilgisayar parçaları ve çevre birimlerinin adresi. Kaliteli ürünler, uygun fiyatlar, hızlı kargo ve müşteri memnuniyeti.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h3>Kategoriler</h3>
+          <ul>
+            <li><a href="/category.html?cat=bilgisayar-bilesenleri">Bilgisayar Bileşenleri</a></li>
+            <li><a href="/category.html?cat=cevre-birimleri">Çevre Birimleri</a></li>
+            <li><a href="/category.html?cat=islemciler">İşlemciler</a></li>
+            <li><a href="/category.html?cat=ekran-kartlari">Ekran Kartları</a></li>
+            <li><a href="/category.html?cat=anakartlar">Anakartlar</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Bilgi</h3>
+          <ul>
+            <li><a href="/about-us.html">Hakkımızda</a></li>
+            <li><a href="/contact.html">İletişim</a></li>
+            <li><a href="/privacy-policy.html">Gizlilik Politikası</a></li>
+            <li><a href="/terms-conditions.html">Şartlar ve Koşullar</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>İletişim</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Örnek Mahallesi, Örnek Caddesi No:123, İstanbul</p>
+          <p><i class="fas fa-phone"></i> +90 (212) 555 55 55</p>
+          <p><i class="fas fa-envelope"></i> info@pcmarketx.com</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2023 PC MARKET X. Tüm hakları saklıdır.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- JavaScript -->
+  <!-- Önce jQuery ve gerekli kütüphaneler -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+  
+  <!-- Sonra kendi script'lerimiz -->
+  <script src="/js/navbar-loader.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/unified-category.js"></script>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html> 

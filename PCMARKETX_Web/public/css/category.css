@@ -1,14 +1,44 @@
 /* Category Page Styles */
 :root {
-  --vatan-primary: #e81f2a;
-  --vatan-secondary: #333333;
-  --vatan-light-gray: #f5f5f5;
-  --vatan-gray: #e0e0e0;
-  --vatan-dark-gray: #666666;
-  --vatan-text: #333333;
+  /* Ana renk paleti */
+  --vatan-primary: #1e88e5; /* Canlı mavi */
+  --vatan-primary-dark: #1565c0; /* Koyu mavi */
+  --vatan-primary-light: #64b5f6; /* Açık mavi */
+  
+  /* Nötr tonlar */
+  --vatan-secondary: #263238; /* Koyu gri-mavi */
+  --vatan-text: #37474f; /* Ana metin rengi */
+  --vatan-text-light: #607d8b; /* Açık metin rengi */
+  --vatan-text-lighter: #90a4ae; /* Daha açık metin rengi */
+  
+  /* Arka plan tonları */
+  --vatan-light: #ffffff; /* Beyaz */
+  --vatan-light-gray: #f5f7fa; /* Açık gri-mavi */
+  --vatan-gray: #eceff1; /* Orta gri-mavi */
+  --vatan-dark-gray: #cfd8dc; /* Koyu gri-mavi */
+  --vatan-dark: #102027; /* Çok koyu gri-mavi */
+  
+  /* Aksesuar renkler */
+  --vatan-accent: #ff6d00; /* Turuncu aksesuar rengi */
+  --vatan-accent-light: #ff9e40; /* Açık turuncu */
+  
+  /* Durum renkleri */
+  --vatan-success: #43a047; /* Yeşil */
+  --vatan-danger: #e53935; /* Kırmızı */
+  --vatan-warning: #ffb300; /* Sarı */
+  --vatan-info: #039be5; /* Mavi */
+  
+  /* Geçişler ve gölgeler */
   --transition: all 0.3s ease;
-  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --border-radius: 4px;
+  --box-shadow: 0 4px 12px rgba(30, 136, 229, 0.08);
+  --box-shadow-hover: 0 6px 16px rgba(30, 136, 229, 0.15);
+  --border-radius: 8px;
+  
+  /* Eski değerlerle uyumluluk için */
+  --primary-color: #1e88e5;
+  --primary-color-dark: #1565c0;
+  --secondary-color: #263238;
+  --accent-color: #ff6d00;
 }
 
 /* Category Header */
@@ -16,10 +46,132 @@
   margin-bottom: 2rem;
 }
 
+/* Filter Bar */
+.filter-bar {
+  background-color: var(--vatan-light);
+  border-bottom: 1px solid var(--vatan-gray);
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+}
+
+.filter-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.sort-section {
+  flex: 0 0 200px;
+}
+
+.sort-section select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--vatan-gray);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  color: var(--vatan-text);
+  background-color: white;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sort-section select:hover {
+  border-color: var(--vatan-primary);
+}
+
+.sort-section select:focus {
+  outline: none;
+  border-color: var(--vatan-primary);
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+}
+
+.price-filter-section {
+  flex: 1;
+}
+
+.price-range {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.price-range input {
+  width: 120px;
+  padding: 0.75rem;
+  border: 1px solid var(--vatan-gray);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.price-range input:focus {
+  outline: none;
+  border-color: var(--vatan-primary);
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
+}
+
+.price-range span {
+  color: var(--vatan-text-light);
+  font-size: 1.2rem;
+}
+
+#price-filter-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--vatan-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+#price-filter-btn:hover {
+  background-color: var(--vatan-primary-dark);
+}
+
+.clear-filters {
+  padding: 0.75rem 1.5rem;
+  background-color: transparent;
+  color: var(--vatan-text);
+  border: 1px solid var(--vatan-gray);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.clear-filters:hover {
+  color: var(--vatan-primary);
+  border-color: var(--vatan-primary);
+}
+
+@media (max-width: 992px) {
+  .filter-bar-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .sort-section {
+    flex: 0 0 100%;
+  }
+  
+  .price-range {
+    flex-wrap: wrap;
+  }
+  
+  .price-range input {
+    flex: 1;
+  }
+}
+
 .category-banner {
   position: relative;
   height: 240px;
   overflow: hidden;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
 .category-banner img {
@@ -34,7 +186,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3));
   display: flex;
   align-items: center;
 }
@@ -44,19 +196,22 @@
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .category-overlay p {
   color: #f8f8f8;
   font-size: 1.2rem;
   max-width: 600px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Breadcrumb Navigation */
 .breadcrumb-container {
-  background-color: #f5f5f5;
+  background-color: var(--vatan-light);
   padding: 12px 0;
   margin-bottom: 30px;
+  border-bottom: 1px solid var(--vatan-gray);
 }
 
 .breadcrumb {
@@ -74,22 +229,22 @@
 
 .breadcrumb li:not(:last-child)::after {
   content: "/";
-  color: #999;
+  color: var(--vatan-text-lighter);
   margin: 0 10px;
 }
 
 .breadcrumb li a {
-  color: #666;
+  color: var(--vatan-text-light);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .breadcrumb li a:hover {
-  color: var(--primary-color);
+  color: var(--vatan-primary);
 }
 
 .breadcrumb li span {
-  color: #333;
+  color: var(--vatan-text);
   font-weight: 500;
 }
 
@@ -102,10 +257,11 @@
 
 /* Filters */
 .category-filters {
-  background-color: #f8f8f8;
-  border-radius: 8px;
+  background-color: var(--vatan-light);
+  border-radius: var(--border-radius);
   padding: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--box-shadow);
+  height: fit-content;
 }
 
 .filter-section {
@@ -116,7 +272,8 @@
   font-size: 16px;
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--vatan-gray);
+  color: var(--vatan-secondary);
 }
 
 .filter-options {
@@ -134,74 +291,17 @@
 .filter-checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary-color);
-}
-
-.price-range {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.price-range input {
-  width: 80px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.price-range span {
-  color: #666;
-}
-
-#price-filter-btn {
-  padding: 6px 12px;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-#price-filter-btn:hover {
-  background-color: var(--primary-color-dark);
-}
-
-#sort-options {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.apply-filters, .clear-filters {
-  width: 100%;
-  padding: 12px;
-  font-size: 14px;
-  margin-bottom: 10px;
+  accent-color: var(--vatan-primary);
   cursor: pointer;
 }
 
-.apply-filters {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
+.filter-checkbox label {
+  cursor: pointer;
+  color: var(--vatan-text);
 }
 
-.apply-filters:hover {
-  background-color: var(--primary-color-dark);
-}
-
-.clear-filters {
-  background-color: transparent;
-  border: 1px solid #ccc;
-  color: #666;
-}
-
-.clear-filters:hover {
-  background-color: #f0f0f0;
+.filter-checkbox:hover label {
+  color: var(--vatan-primary);
 }
 
 /* Products */
@@ -213,7 +313,7 @@
 
 .product-count {
   font-size: 14px;
-  color: #666;
+  color: var(--vatan-text-light);
   margin-bottom: 10px;
 }
 
@@ -226,9 +326,9 @@
 
 /* Ürün Kartı */
 .product-item {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  background-color: var(--vatan-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
   transition: all 0.3s ease;
   overflow: hidden;
   position: relative;
@@ -238,7 +338,7 @@
 }
 
 .product-item:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow-hover);
   transform: translateY(-5px);
 }
 
@@ -246,6 +346,7 @@
   position: relative;
   height: 200px;
   overflow: hidden;
+  background-color: var(--vatan-light-gray);
 }
 
 .product-item .product-image img {
@@ -275,7 +376,7 @@
 }
 
 .product-item .product-name a {
-  color: #333;
+  color: var(--vatan-secondary);
   text-decoration: none;
   transition: color 0.2s;
 }
@@ -285,7 +386,7 @@
 }
 
 .product-item .product-brand {
-  color: #777;
+  color: var(--vatan-text-lighter);
   font-size: 14px;
   margin-bottom: 10px;
 }
@@ -313,14 +414,14 @@
   padding-left: 15px;
   margin-bottom: 5px;
   font-size: 13px;
-  color: #555;
+  color: var(--vatan-text-light);
 }
 
 .product-item .product-features li:before {
   content: "•";
   position: absolute;
   left: 0;
-  color: var(--vatan-primary);
+  color: var(--vatan-accent);
 }
 
 .product-item .product-actions {
@@ -334,6 +435,16 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  background-color: var(--vatan-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.product-item .add-to-cart:hover {
+  background-color: var(--vatan-primary-dark);
+  box-shadow: var(--box-shadow-hover);
 }
 
 /* Pagination */
@@ -347,18 +458,21 @@
 .pagination-prev, .pagination-next {
   width: 40px;
   height: 40px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: white;
+  border: 1px solid var(--vatan-gray);
+  border-radius: var(--border-radius);
+  background-color: var(--vatan-light);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--vatan-text);
 }
 
 .pagination-prev:hover, .pagination-next:hover {
-  background-color: #f5f5f5;
+  background-color: var(--vatan-light-gray);
+  color: var(--vatan-primary);
+  border-color: var(--vatan-primary-light);
 }
 
 .pagination-prev:disabled, .pagination-next:disabled {
@@ -374,25 +488,29 @@
 .pagination-number {
   width: 40px;
   height: 40px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: white;
+  border: 1px solid var(--vatan-gray);
+  border-radius: var(--border-radius);
+  background-color: var(--vatan-light);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 5px;
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--vatan-text);
 }
 
 .pagination-number:hover {
-  background-color: #f5f5f5;
+  background-color: var(--vatan-light-gray);
+  color: var(--vatan-primary);
+  border-color: var(--vatan-primary-light);
 }
 
 .pagination-number.active {
-  background-color: var(--primary-color);
+  background-color: var(--vatan-primary);
   color: white;
-  border-color: var(--primary-color);
+  border-color: var(--vatan-primary);
+  box-shadow: 0 0 0 3px rgba(120, 118, 123, 0.2);
 }
 
 /* No Products Message */
@@ -400,29 +518,87 @@
   grid-column: 1 / -1;
   padding: 40px 20px;
   text-align: center;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  color: #666;
+  background-color: var(--vatan-light-gray);
+  border-radius: var(--border-radius);
+  color: var(--vatan-text-light);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 15px;
+  box-shadow: var(--box-shadow);
 }
 
 .no-products i, .error i {
   font-size: 48px;
-  color: #ccc;
+  color: var(--vatan-dark-gray);
 }
 
 .error i {
-  color: #ff5252;
+  color: var(--vatan-danger);
 }
 
 .error {
-  border: 1px solid #ffcdd2;
-  background-color: #ffebee;
-  color: #b71c1c;
+  border: 1px solid var(--vatan-danger);
+  background-color: #fbf0f0;
+  color: var(--vatan-danger);
+}
+
+/* Kategori sayfaları için bildirim stilleri */
+.notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  background-color: var(--vatan-primary);
+  color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-hover);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s, transform 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification.success {
+  background-color: var(--vatan-success);
+}
+
+.notification.error {
+  background-color: var(--vatan-danger);
+}
+
+.notification i {
+  font-size: 18px;
+}
+
+/* Yükleniyor ve hata mesajları */
+.loading, .error, .no-products {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  width: 100%;
+  text-align: center;
+}
+
+.loading i {
+  color: var(--vatan-accent);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Responsive Styles */
@@ -433,15 +609,30 @@
   
   .category-filters {
     order: 1;
+    margin-top: 20px;
+    padding: 15px;
   }
   
   .category-products {
     order: 0;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
   }
   
   .product-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filter-section {
+    margin-bottom: 15px;
+  }
+  
+  .filter-section h3 {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+  
+  .filter-options {
+    gap: 8px;
   }
 }
 
@@ -464,6 +655,23 @@
   
   .product-item .product-image {
     height: 160px;
+  }
+  
+  .category-filters {
+    padding: 12px;
+  }
+  
+  .price-range {
+    flex-wrap: wrap;
+  }
+  
+  .price-range input {
+    width: calc(50% - 15px);
+  }
+  
+  #price-filter-btn {
+    margin-top: 8px;
+    width: 100%;
   }
 }
 
@@ -496,6 +704,31 @@
   .product-item .add-to-cart {
     width: 100%;
   }
+  
+  .category-filters {
+    padding: 10px;
+  }
+  
+  .filter-section h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+  
+  .filter-checkbox {
+    font-size: 13px;
+  }
+  
+  .apply-filters, .clear-filters {
+    padding: 10px;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  
+  #sort-options {
+    padding: 8px;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 1200px) {
@@ -504,61 +737,156 @@
   }
 }
 
-/* Kategori sayfaları için bildirim stilleri */
-.notification {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  background-color: #4CAF50;
-  color: white;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.3s, transform 0.3s;
+/* Subcategories Section */
+.subcategories-section {
+  margin-top: 4rem;
+  margin-bottom: 2rem;
 }
 
-.notification.show {
-  opacity: 1;
-  transform: translateY(0);
+.subcategories-section h2 {
+  font-size: 1.75rem;
+  color: var(--vatan-secondary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+  padding-bottom: 0.75rem;
 }
 
-.notification.error {
-  background-color: #f44336;
+.subcategories-section h2:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background-color: var(--vatan-primary);
 }
 
-/* Yükleniyor ve hata mesajları */
-.loading, .error, .no-products {
+.subcategories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.subcategory-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 50px 0;
-  width: 100%;
+  padding: 2rem 1.5rem;
+  background-color: var(--vatan-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
   text-align: center;
+  transition: all 0.3s ease;
 }
 
-.loading i, .error i, .no-products i {
-  font-size: 48px;
-  margin-bottom: 15px;
-  color: #666;
+.subcategory-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--box-shadow-hover);
 }
 
-.loading i {
-  color: #007bff;
+.subcategory-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: rgba(30, 136, 229, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  transition: all 0.3s ease;
 }
 
-.error i {
-  color: #f44336;
+.subcategory-card:hover .subcategory-icon {
+  background-color: var(--vatan-primary);
 }
 
-.no-products i {
-  color: #666;
+.subcategory-icon i {
+  font-size: 2rem;
+  color: var(--vatan-primary);
+  transition: all 0.3s ease;
 }
 
-.loading p, .error p, .no-products p {
-  font-size: 18px;
-  color: #666;
+.subcategory-card:hover .subcategory-icon i {
+  color: white;
+}
+
+.subcategory-card h3 {
+  font-size: 1.25rem;
+  color: var(--vatan-secondary);
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.subcategory-card p {
+  font-size: 0.9rem;
+  color: var(--vatan-text-light);
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+}
+
+.subcategory-card .btn {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .subcategories-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .subcategory-card {
+    padding: 1.5rem 1rem;
+  }
+  
+  .subcategory-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .subcategory-icon i {
+    font-size: 1.5rem;
+  }
+  
+  .subcategory-card h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .subcategories-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .subcategory-card {
+    padding: 1.25rem 0.75rem;
+  }
+  
+  .subcategory-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0.75rem;
+  }
+  
+  .subcategory-icon i {
+    font-size: 1.25rem;
+  }
+  
+  .subcategory-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .subcategory-card p {
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .subcategory-card .btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+  }
 } 

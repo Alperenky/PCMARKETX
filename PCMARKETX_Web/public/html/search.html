@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arama Sonuçları - PC MARKET X</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/search.css">
+  <link rel="stylesheet" href="/css/chatbot.css">
+</head>
+<body>
+  <!-- Navbar Container -->
+  <div id="navbar-container"></div>
+
+  <main>
+    <div class="container">
+      <div class="search-results-container">
+        <div class="search-header">
+          <h1>Arama Sonuçları</h1>
+          <div class="search-info">
+            "<span id="search-keyword"></span>" için <span id="search-count">0</span> sonuç bulundu
+          </div>
+        </div>
+
+        <div class="search-filters">
+          <div class="filter-group">
+            <h3><i class="fas fa-tag"></i> Fiyat</h3>
+            <div class="price-filter">
+              <input type="number" id="price-min" placeholder="Min">
+              <span>-</span>
+              <input type="number" id="price-max" placeholder="Max">
+              <button id="apply-price-filter" class="btn-filter">Ara</button>
+            </div>
+          </div>
+          <div class="filter-group">
+            <h3><i class="fas fa-sort"></i> Sırala</h3>
+            <select id="sort-select">
+              <option value="newest">En Yeniler</option>
+              <option value="price-asc">Fiyat: Düşük → Yüksek</option>
+              <option value="price-desc">Fiyat: Yüksek → Düşük</option>
+              <option value="popular">En Popüler</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="search-results-wrapper">
+          <div class="search-results-grid" id="search-results">
+            <!-- Arama sonuçları buraya dinamik olarak eklenecek -->
+          </div>
+          
+          <div class="no-results" id="no-results">
+            <i class="fas fa-search"></i>
+            <p>Aramanızla eşleşen ürün bulunamadı.</p>
+            <p>Farklı bir arama terimi deneyin veya kategorilere göz atın.</p>
+          </div>
+          
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Arama sonuçları yükleniyor...</p>
+          </div>
+        </div>
+
+        <div class="pagination" id="pagination">
+          <!-- Sayfalama burada gösterilecek -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3>PC MARKET X</h3>
+          <ul>
+            <li><a href="/about.html">Hakkımızda</a></li>
+            <li><a href="/careers.html">Kariyer</a></li>
+            <li><a href="/stores.html">Mağazalarımız</a></li>
+            <li><a href="/blog.html">Blog</a></li>
+            <li><a href="/contact.html">İletişim</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Müşteri Hizmetleri</h3>
+          <ul>
+            <li><a href="/faq.html">Sıkça Sorulan Sorular</a></li>
+            <li><a href="/shipping.html">Kargo ve Teslimat</a></li>
+            <li><a href="/returns.html">İade ve Değişim</a></li>
+            <li><a href="/warranty.html">Garanti Koşulları</a></li>
+            <li><a href="/privacy.html">Gizlilik Politikası</a></li>
+          </ul>
+        </div>
+        <div class="footer-column contact">
+          <h3>İletişim</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Teknoloji Caddesi No:123, Ankara</p>
+          <p><i class="fas fa-phone"></i> 0850 123 45 67</p>
+          <p><i class="fas fa-envelope"></i> info@pcmarketx.com</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2023 PC MARKET X. Tüm hakları saklıdır.</p>
+        <div class="payment-methods">
+          
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/navbar.js"></script>
+  <script src="/js/navbar-loader.js"></script>
+  <script src="/js/search.js"></script>
+  <script src="/js/chatbot.js"></script>
+</body>
+</html> 

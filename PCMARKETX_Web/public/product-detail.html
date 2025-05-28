@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ürün Detayı - PC MARKET X</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/notification.css">
+  <link rel="stylesheet" href="/css/chatbot.css">
+  <style>
+    .product-detail-container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    .breadcrumb-container {
+      background-color: #f8f9fa;
+      padding: 10px 0;
+      margin-bottom: 20px;
+    }
+
+    .breadcrumb {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+    }
+
+    .breadcrumb li {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .breadcrumb li:not(:last-child)::after {
+      content: '/';
+      margin: 0 10px;
+      color: #6c757d;
+    }
+
+    .breadcrumb a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .product-top-section {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+      gap: 30px;
+    }
+
+    .product-image-container {
+      flex: 1;
+      min-width: 300px;
+      max-width: 500px;
+    }
+
+    .product-main-image {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-thumbnails {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .product-thumbnail {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .product-thumbnail:hover {
+      border-color: #007bff;
+    }
+
+    .product-thumbnail.active {
+      border-color: #007bff;
+    }
+
+    .product-info-container {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .product-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .product-brand {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .product-brand span {
+      color: #6c757d;
+      margin-right: 10px;
+    }
+
+    .product-brand a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .product-rating {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .stars {
+      display: flex;
+      margin-right: 10px;
+    }
+
+    .stars i {
+      color: #ffc107;
+      margin-right: 2px;
+    }
+
+    .review-count {
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    .product-price-container {
+      margin-bottom: 20px;
+    }
+
+    .product-old-price {
+      text-decoration: line-through;
+      color: #6c757d;
+      font-size: 18px;
+      margin-right: 10px;
+    }
+
+    .product-current-price {
+      font-size: 28px;
+      font-weight: 700;
+      color: #dc3545;
+    }
+
+    .product-stock {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .in-stock {
+      color: #28a745;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+
+    .in-stock i {
+      margin-right: 5px;
+    }
+
+    .out-of-stock {
+      color: #dc3545;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+
+    .out-of-stock i {
+      margin-right: 5px;
+    }
+
+    .product-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .quantity-btn {
+      width: 40px;
+      height: 40px;
+      background: #f8f9fa;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .quantity-btn:hover {
+      background: #e9ecef;
+    }
+
+    .quantity-input {
+      width: 60px;
+      height: 40px;
+      border: none;
+      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .add-to-cart-btn {
+      flex: 1;
+      height: 40px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-to-cart-btn:hover {
+      background: #0069d9;
+    }
+
+    .add-to-cart-btn i {
+      margin-right: 8px;
+    }
+
+    .favorite-btn {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 18px;
+      color: #6c757d;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .favorite-btn:hover {
+      color: #dc3545;
+      border-color: #dc3545;
+    }
+
+    .favorite-btn.active {
+      color: #dc3545;
+      border-color: #dc3545;
+    }
+
+    .product-shipping {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+
+    .product-shipping i {
+      font-size: 24px;
+      color: #6c757d;
+      margin-right: 15px;
+    }
+
+    .product-shipping-text h4 {
+      margin: 0 0 5px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .product-shipping-text p {
+      margin: 0;
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .product-bottom-section {
+      margin-bottom: 40px;
+    }
+
+    .product-tabs {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 20px;
+    }
+
+    .product-tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .product-tab.active {
+      border-bottom-color: #007bff;
+      color: #007bff;
+    }
+
+    .product-tab-content {
+      display: none;
+    }
+
+    .product-tab-content.active {
+      display: block;
+    }
+
+    .product-description p {
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .product-specs table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .product-specs table tr:nth-child(odd) {
+      background-color: #f8f9fa;
+    }
+
+    .product-specs table td {
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+    }
+
+    .product-specs table td:first-child {
+      width: 30%;
+      font-weight: 500;
+    }
+
+    .product-review {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+
+    .product-review:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .reviewer-name {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .review-date {
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    .review-body p {
+      margin: 0;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .product-top-section {
+        flex-direction: column;
+      }
+
+      .product-image-container, 
+      .product-info-container {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar Container -->
+  <div id="navbar-container"></div>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-container">
+      <div class="container">
+        <ul class="breadcrumb">
+          <li><a href="/"><i class="fas fa-home"></i> Anasayfa</a></li>
+          <li><a href="#" id="category-link">Kategori</a></li>
+          <li><span id="product-name">Ürün Adı</span></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="product-detail-container">
+      <!-- Ürün Detay Üst Kısım -->
+      <div class="product-top-section">
+        <!-- Sol taraf - Ürün Görseli -->
+        <div class="product-image-container">
+          <img src="" alt="" class="product-main-image" id="product-main-image">
+          <div class="product-thumbnails" id="product-thumbnails">
+            <!-- Thumbnail resimler JavaScript ile eklenecek -->
+          </div>
+        </div>
+        
+        <!-- Sağ taraf - Ürün Bilgileri -->
+        <div class="product-info-container">
+          <h1 class="product-title" id="product-title">Ürün Adı</h1>
+          
+          <div class="product-brand">
+            <span>Marka:</span>
+            <a href="#" id="product-brand">Marka Adı</a>
+          </div>
+          
+          <div class="product-rating">
+            <div class="stars" id="product-stars">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+            <span class="review-count" id="review-count">(0 değerlendirme)</span>
+          </div>
+          
+          <div class="product-price-container">
+            <span class="product-old-price" id="old-price">₺0.00</span>
+            <span class="product-current-price" id="current-price">₺0.00</span>
+          </div>
+          
+          <div class="product-stock" id="stock-status">
+            <span class="in-stock"><i class="fas fa-check-circle"></i> Stokta</span>
+            <!-- <span class="out-of-stock"><i class="fas fa-times-circle"></i> Stokta Yok</span> -->
+          </div>
+          
+          <div class="product-actions">
+            <div class="quantity-control">
+              <button class="quantity-btn" id="decrease-qty"><i class="fas fa-minus"></i></button>
+              <input type="number" min="1" value="1" class="quantity-input" id="product-quantity">
+              <button class="quantity-btn" id="increase-qty"><i class="fas fa-plus"></i></button>
+            </div>
+            <button class="add-to-cart-btn" id="add-to-cart-btn"><i class="fas fa-shopping-cart"></i> Sepete Ekle</button>
+            <button class="favorite-btn" id="favorite-btn"><i class="far fa-heart"></i></button>
+          </div>
+          
+          <div class="product-shipping">
+            <i class="fas fa-truck"></i>
+            <div class="product-shipping-text">
+              <h4>Hızlı Teslimat</h4>
+              <p>24 saat içinde kargoya verilir</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Ürün Detay Alt Kısım - Tabs -->
+      <div class="product-bottom-section">
+        <div class="product-tabs">
+          <div class="product-tab active" data-tab="description">Ürün Açıklaması</div>
+          <div class="product-tab" data-tab="specs">Teknik Özellikler</div>
+          <div class="product-tab" data-tab="reviews">Yorumlar</div>
+        </div>
+        
+        <!-- Ürün Açıklaması Tab İçeriği -->
+        <div class="product-tab-content product-description active" id="description-content">
+          <p id="product-description">Ürün açıklaması burada yer alacak...</p>
+        </div>
+        
+        <!-- Teknik Özellikler Tab İçeriği -->
+        <div class="product-tab-content product-specs" id="specs-content">
+          <table id="specs-table">
+            <!-- Teknik özellikler JavaScript ile eklenecek -->
+          </table>
+        </div>
+        
+        <!-- Yorumlar Tab İçeriği -->
+        <div class="product-tab-content product-reviews" id="reviews-content">
+          <!-- Yorumlar JavaScript ile eklenecek -->
+          <div class="product-review">
+            <div class="review-header">
+              <span class="reviewer-name">Ahmet Y.</span>
+              <div class="stars">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <span class="review-date">10.05.2023</span>
+            </div>
+            <div class="review-body">
+              <p>Harika bir ürün, tam beklediğim gibi. Hızlı teslimat için teşekkürler!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3>PC MARKET X</h3>
+          <p>En iyi bilgisayar parçaları ve çevre birimlerinin adresi. Kaliteli ürünler, uygun fiyatlar, hızlı kargo ve müşteri memnuniyeti.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h3>Kategoriler</h3>
+          <ul>
+            <li><a href="/category.html?cat=bilgisayar-bilesenleri">Bilgisayar Bileşenleri</a></li>
+            <li><a href="/category.html?cat=cevre-birimleri">Çevre Birimleri</a></li>
+            <li><a href="/category.html?cat=islemciler">İşlemciler</a></li>
+            <li><a href="/category.html?cat=ekran-kartlari">Ekran Kartları</a></li>
+            <li><a href="/category.html?cat=anakartlar">Anakartlar</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Bilgi</h3>
+          <ul>
+            <li><a href="/about-us.html">Hakkımızda</a></li>
+            <li><a href="/contact.html">İletişim</a></li>
+            <li><a href="/privacy-policy.html">Gizlilik Politikası</a></li>
+            <li><a href="/terms-conditions.html">Şartlar ve Koşullar</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>İletişim</h3>
+          <p><i class="fas fa-map-marker-alt"></i> Örnek Mahallesi, Örnek Caddesi No:123, İstanbul</p>
+          <p><i class="fas fa-phone"></i> +90 (212) 555 55 55</p>
+          <p><i class="fas fa-envelope"></i> info@pcmarketx.com</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2023 PC MARKET X. Tüm hakları saklıdır.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/js/navbar-loader.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/chatbot.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // URL'den ürün ID'sini al
+      const urlParams = new URLSearchParams(window.location.search);
+      const productId = urlParams.get('id');
+      
+      if (!productId) {
+        window.location.href = '/'; // ID yoksa ana sayfaya yönlendir
+        return;
+      }
+      
+      // Ürün detaylarını getir
+      fetchProductDetails(productId);
+      
+      // Tab geçişleri
+      const tabs = document.querySelectorAll('.product-tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Active tab'ı güncelle
+          tabs.forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Tab içeriğini göster
+          const tabName = this.getAttribute('data-tab');
+          const tabContents = document.querySelectorAll('.product-tab-content');
+          tabContents.forEach(content => content.classList.remove('active'));
+          document.getElementById(`${tabName}-content`).classList.add('active');
+        });
+      });
+      
+      // Miktar kontrolleri
+      document.getElementById('decrease-qty').addEventListener('click', function() {
+        const input = document.getElementById('product-quantity');
+        if (input.value > 1) {
+          input.value = parseInt(input.value) - 1;
+        }
+      });
+      
+      document.getElementById('increase-qty').addEventListener('click', function() {
+        const input = document.getElementById('product-quantity');
+        input.value = parseInt(input.value) + 1;
+      });
+      
+      // Sepete ekle butonu
+      document.getElementById('add-to-cart-btn').addEventListener('click', function() {
+        const quantity = document.getElementById('product-quantity').value;
+        addToCart(productId, parseInt(quantity));
+      });
+      
+      // Favorilere ekle butonu
+      document.getElementById('favorite-btn').addEventListener('click', function() {
+        this.classList.toggle('active');
+        const isActive = this.classList.contains('active');
+        
+        if (isActive) {
+          this.innerHTML = '<i class="fas fa-heart"></i>';
+          addToFavorites(productId);
+        } else {
+          this.innerHTML = '<i class="far fa-heart"></i>';
+          removeFromFavorites(productId);
+        }
+      });
+    });
+    
+    // Ürün detaylarını getiren fonksiyon
+    function fetchProductDetails(productId) {
+      fetch(`/api/products/${productId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Ürün bulunamadı');
+          }
+          return response.json();
+        })
+        .then(product => {
+          // Sayfa başlığını güncelle
+          document.title = `${product.name} - PC MARKET X`;
+          
+          // Breadcrumb'ları güncelle
+          document.getElementById('product-name').textContent = product.name;
+          document.getElementById('category-link').textContent = product.category.name;
+          document.getElementById('category-link').href = `/category.html?cat=${product.category.slug}`;
+          
+          // Ürün bilgilerini güncelle
+          document.getElementById('product-title').textContent = product.name;
+          document.getElementById('product-brand').textContent = product.brand;
+          document.getElementById('product-brand').href = `/category.html?brand=${product.brand}`;
+          
+          // Fiyatı güncelle
+          if (product.discountPrice) {
+            document.getElementById('old-price').textContent = `₺${product.price.toFixed(2)}`;
+            document.getElementById('current-price').textContent = `₺${product.discountPrice.toFixed(2)}`;
+          } else {
+            document.getElementById('old-price').style.display = 'none';
+            document.getElementById('current-price').textContent = `₺${product.price.toFixed(2)}`;
+          }
+          
+          // Stok durumunu güncelle
+          const stockStatus = document.getElementById('stock-status');
+          if (product.stock > 0) {
+            stockStatus.innerHTML = `<span class="in-stock"><i class="fas fa-check-circle"></i> Stokta (${product.stock} adet)</span>`;
+          } else {
+            stockStatus.innerHTML = `<span class="out-of-stock"><i class="fas fa-times-circle"></i> Stokta Yok</span>`;
+            document.getElementById('add-to-cart-btn').disabled = true;
+            document.getElementById('add-to-cart-btn').textContent = 'Stokta Yok';
+          }
+          
+          // Ana resmi güncelle
+          const mainImage = document.getElementById('product-main-image');
+          mainImage.src = product.images[0] || '/images/no-image.jpg';
+          mainImage.alt = product.name;
+          
+          // Thumbnail resimleri ekle
+          const thumbnailsContainer = document.getElementById('product-thumbnails');
+          thumbnailsContainer.innerHTML = '';
+          
+          product.images.forEach((image, index) => {
+            const thumbnail = document.createElement('img');
+            thumbnail.src = image;
+            thumbnail.alt = `${product.name} - Görsel ${index + 1}`;
+            thumbnail.className = 'product-thumbnail' + (index === 0 ? ' active' : '');
+            
+            thumbnail.addEventListener('click', function() {
+              // Ana resmi değiştir
+              mainImage.src = image;
+              
+              // Active sınıfını güncelle
+              document.querySelectorAll('.product-thumbnail').forEach(thumb => thumb.classList.remove('active'));
+              this.classList.add('active');
+            });
+            
+            thumbnailsContainer.appendChild(thumbnail);
+          });
+          
+          // Ürün açıklamasını güncelle
+          document.getElementById('product-description').innerHTML = product.description;
+          
+          // Teknik özellikleri güncelle
+          const specsTable = document.getElementById('specs-table');
+          specsTable.innerHTML = '';
+          
+          for (const [key, value] of Object.entries(product.specifications)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${key}</td>
+              <td>${value}</td>
+            `;
+            specsTable.appendChild(row);
+          }
+          
+          // Yorumları güncelle
+          const reviewsContent = document.getElementById('reviews-content');
+          reviewsContent.innerHTML = '';
+          
+          if (product.reviews && product.reviews.length > 0) {
+            product.reviews.forEach(review => {
+              // Yıldızları oluştur
+              let starsHtml = '';
+              for (let i = 1; i <= 5; i++) {
+                if (i <= review.rating) {
+                  starsHtml += '<i class="fas fa-star"></i>';
+                } else if (i - 0.5 <= review.rating) {
+                  starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                  starsHtml += '<i class="far fa-star"></i>';
+                }
+              }
+              
+              const reviewElement = document.createElement('div');
+              reviewElement.className = 'product-review';
+              reviewElement.innerHTML = `
+                <div class="review-header">
+                  <span class="reviewer-name">${review.userName}</span>
+                  <div class="stars">${starsHtml}</div>
+                  <span class="review-date">${new Date(review.date).toLocaleDateString('tr-TR')}</span>
+                </div>
+                <div class="review-body">
+                  <p>${review.comment}</p>
+                </div>
+              `;
+              
+              reviewsContent.appendChild(reviewElement);
+            });
+          } else {
+            reviewsContent.innerHTML = '<p>Bu ürün için henüz yorum yapılmamış.</p>';
+          }
+          
+          // Değerlendirme sayısını güncelle
+          const reviewCount = product.reviews ? product.reviews.length : 0;
+          document.getElementById('review-count').textContent = `(${reviewCount} değerlendirme)`;
+          
+          // Yıldızları güncelle
+          if (product.averageRating) {
+            const starsContainer = document.getElementById('product-stars');
+            starsContainer.innerHTML = '';
+            
+            for (let i = 1; i <= 5; i++) {
+              const star = document.createElement('i');
+              if (i <= Math.floor(product.averageRating)) {
+                star.className = 'fas fa-star';
+              } else if (i - 0.5 <= product.averageRating) {
+                star.className = 'fas fa-star-half-alt';
+              } else {
+                star.className = 'far fa-star';
+              }
+              
+              starsContainer.appendChild(star);
+            }
+          }
+          
+          // Favori durumunu kontrol et
+          checkIfFavorite(productId);
+        })
+        .catch(error => {
+          console.error('Ürün yüklenirken hata oluştu:', error);
+          alert('Ürün bulunamadı!');
+          window.location.href = '/';
+        });
+    }
+    
+    // Sepete ekleme fonksiyonu
+    function addToCart(productId, quantity) {
+      fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId, quantity }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showNotification('Ürün sepete eklendi!', 'success');
+            // Sepet simgesini güncelle
+            updateCartIcon();
+          } else {
+            showNotification(data.message || 'Ürün sepete eklenirken bir hata oluştu.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Sepete eklerken hata oluştu:', error);
+          showNotification('Ürün sepete eklenirken bir hata oluştu.', 'error');
+        });
+    }
+    
+    // Favorilere ekleme fonksiyonu
+    function addToFavorites(productId) {
+      fetch('/api/favorites/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showNotification('Ürün favorilere eklendi!', 'success');
+          } else {
+            showNotification(data.message || 'Ürün favorilere eklenirken bir hata oluştu.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Favorilere eklerken hata oluştu:', error);
+          showNotification('Ürün favorilere eklenirken bir hata oluştu.', 'error');
+        });
+    }
+    
+    // Favorilerden çıkarma fonksiyonu
+    function removeFromFavorites(productId) {
+      fetch('/api/favorites/remove', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showNotification('Ürün favorilerden çıkarıldı.', 'info');
+          } else {
+            showNotification(data.message || 'Ürün favorilerden çıkarılırken bir hata oluştu.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Favorilerden çıkarırken hata oluştu:', error);
+          showNotification('Ürün favorilerden çıkarılırken bir hata oluştu.', 'error');
+        });
+    }
+    
+    // Favori durumunu kontrol et
+    function checkIfFavorite(productId) {
+      fetch(`/api/favorites/check/${productId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.isFavorite) {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            favoriteBtn.classList.add('active');
+            favoriteBtn.innerHTML = '<i class="fas fa-heart"></i>';
+          }
+        })
+        .catch(error => console.error('Favori durumu kontrol edilirken hata oluştu:', error));
+    }
+    
+    // Sepet simgesini güncelle
+    function updateCartIcon() {
+      fetch('/api/cart/count')
+        .then(response => response.json())
+        .then(data => {
+          if (data.count > 0) {
+            const cartCountElement = document.querySelector('.cart-count');
+            if (cartCountElement) {
+              cartCountElement.textContent = data.count;
+              cartCountElement.style.display = 'flex';
+            }
+          }
+        })
+        .catch(error => console.error('Sepet sayısı alınırken hata oluştu:', error));
+    }
+    
+    // Bildirim gösterme fonksiyonu
+    function showNotification(message, type) {
+      // Mevcut bildirim scripti varsa kullan
+      if (typeof showNotification === 'function' && window.showNotification !== showNotification) {
+        window.showNotification(message, type);
+        return;
+      }
+      
+      // Yoksa basit bir alert göster
+      alert(message);
+    }
+  </script>
+</body>
+</html> 

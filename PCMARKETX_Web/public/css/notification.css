@@ -1,68 +1,126 @@
-/* Bildirim Stilleri */
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    max-width: 350px;
-    transform: translateX(400px);
-    transition: transform 0.3s ease-in-out;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
+/* Notification Styles */
+:root {
+  --vatan-primary: #1e88e5;
+  --vatan-primary-dark: #1565c0;
+  --vatan-primary-light: #64b5f6;
+  
+  --vatan-accent: #ff6d00;
+  --vatan-accent-dark: #e65100;
+  --vatan-accent-light: #ff9e40;
+  
+  --vatan-success: #43a047;
+  --vatan-danger: #e53935;
+  --vatan-warning: #ffb300;
+  --vatan-info: #039be5;
 }
 
-.notification.show {
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #fff;
+  color: #333;
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  min-width: 300px;
+  max-width: 500px;
+  z-index: 9999;
+  animation: slide-in 0.3s ease-out forwards;
+  border-left: 4px solid var(--vatan-primary);
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
     transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification.fade-out {
+  animation: slide-out 0.3s ease-in forwards;
+}
+
+@keyframes slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.notification i {
+  margin-right: 15px;
+  font-size: 24px;
+}
+
+.notification.success {
+  border-left-color: var(--vatan-success);
+}
+
+.notification.success i {
+  color: var(--vatan-success);
+}
+
+.notification.error {
+  border-left-color: var(--vatan-danger);
+}
+
+.notification.error i {
+  color: var(--vatan-danger);
+}
+
+.notification.warning {
+  border-left-color: var(--vatan-warning);
+}
+
+.notification.warning i {
+  color: var(--vatan-warning);
+}
+
+.notification.info {
+  border-left-color: var(--vatan-info);
+}
+
+.notification.info i {
+  color: var(--vatan-info);
 }
 
 .notification-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-radius: 4px;
-    background-color: #ffffff;
-    color: #333;
-    font-size: 14px;
+  flex: 1;
 }
 
-.notification.success .notification-content {
-    background-color: #e8f5e9;
-    border-left: 4px solid #4caf50;
-}
-
-.notification.error .notification-content {
-    background-color: #ffebee;
-    border-left: 4px solid #f44336;
-}
-
-.notification.info .notification-content {
-    background-color: #e3f2fd;
-    border-left: 4px solid #2196f3;
-}
-
-.notification.warning .notification-content {
-    background-color: #fff8e1;
-    border-left: 4px solid #ffc107;
-}
-
-.notification-content span {
-    flex: 1;
+.notification-message {
+  margin: 0;
 }
 
 .notification-close {
-    background: none;
-    border: none;
-    color: #757575;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 0 0 10px;
-    margin-left: 10px;
+  color: #999;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 18px;
+  transition: color 0.2s ease;
 }
 
 .notification-close:hover {
-    color: #333;
+  color: #333;
 }
 
 /* Mobil için düzenleme */

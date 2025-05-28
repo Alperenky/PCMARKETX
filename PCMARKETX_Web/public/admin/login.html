@@ -244,6 +244,17 @@
             const loginForm = document.getElementById('loginForm');
             const loginAlert = document.getElementById('loginAlert');
             
+            // Toggle password visibility
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
             if (loginForm) {
                 loginForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
@@ -259,23 +270,14 @@
                         // Disable form elements during login
                         Array.from(loginForm.elements).forEach(el => el.disabled = true);
                         
-                        // Temporary login for testing
-                        if (email === 'admin@pcmarketx.com' && password === 'admin123') {
-                            // Create a mock token
-                            localStorage.setItem('admin_token', 'test_token_123456789');
-                            
-                            // Redirect to admin panel
-                            window.location.href = 'index.html';
-                            return;
-                        }
-                        
                         // Create request to login API
                         const response = await fetch('/api/admin/login', {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
                             },
-                            body: JSON.stringify({ email, password, rememberMe })
+                            body: JSON.stringify({ email, password })
                         });
                         
                         const data = await response.json();
@@ -284,13 +286,24 @@
                             throw new Error(data.message || 'Giriş başarısız.');
                         }
                         
+                        console.log('Giriş başarılı, yanıt:', data);
+                        
                         // Save auth token
                         if (data.token) {
                             localStorage.setItem('admin_token', data.token);
+                            
+                            // Admin bilgilerini de kaydedelim
+                            if (data._id) {
+                                localStorage.setItem('admin_id', data._id);
+                                localStorage.setItem('admin_name', data.username || data.email);
+                                localStorage.setItem('admin_role', data.role || 'admin');
+                            }
+                            
+                            // Redirect to admin panel
+                            window.location.href = 'index.html';
+                        } else {
+                            throw new Error('Token alınamadı. Lütfen tekrar giriş yapın.');
                         }
-                        
-                        // Redirect to admin panel
-                        window.location.href = 'index.html';
                     } catch (error) {
                         // Show error message
                         loginAlert.textContent = error.message || 'Giriş yapılırken bir hata oluştu.';
@@ -298,6 +311,9 @@
                         
                         // Enable form elements
                         Array.from(loginForm.elements).forEach(el => el.disabled = false);
+                        
+                        // Log the error
+                        console.error('Login işlemi başarısız:', error);
                     }
                 });
             }

@@ -55,12 +55,32 @@ async function loadCategories(page = 1) {
         
         const response = await AdminAPI.getCategories(params);
         
+        // API'den dönen veri yapısını kontrol et
+        let categories = [];
+        let total = 0;
+        
+        if (Array.isArray(response)) {
+            // Doğrudan dizi olarak döndüyse
+            categories = response;
+            total = response.length;
+        } else if (response && response.data && Array.isArray(response.data)) {
+            // data özelliği içinde dizi olarak döndüyse
+            categories = response.data;
+            total = response.total || categories.length;
+        } else if (response && typeof response === 'object') {
+            // başka bir format
+            categories = Object.values(response);
+            total = categories.length;
+        }
+        
+        console.log('Yüklenen kategoriler:', categories);
+        
         // Update pagination
-        totalPages = Math.ceil(response.total / pageSize);
+        totalPages = Math.ceil(total / pageSize);
         currentPage = page;
         
         // Render the categories table
-        renderCategoriesTable(response.data);
+        renderCategoriesTable(categories);
         
         // Render pagination
         renderPagination(
@@ -203,16 +223,39 @@ async function loadParentCategories(excludeId = null) {
         parentSelect.innerHTML = '';
         parentSelect.appendChild(defaultOption);
         
-        // Add categories as options
-        response.data.forEach(category => {
-            // Skip the current category (can't be its own parent)
-            if (excludeId && category._id === excludeId) return;
+        // API'den dönen veri yapısını kontrol et
+        let categories = [];
+        
+        if (Array.isArray(response)) {
+            // Doğrudan dizi olarak döndüyse
+            categories = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+            // data özelliği içinde dizi olarak döndüyse
+            categories = response.data;
+        } else if (response && typeof response === 'object') {
+            // başka bir format
+            categories = Object.values(response);
+        }
+        
+        console.log('Üst kategoriler için yüklenen kategoriler:', categories);
+        
+        // Ana kategorileri grup olarak ekle
+        const mainCategories = categories.filter(cat => !cat.parent && cat._id !== excludeId);
+        
+        if (mainCategories.length > 0) {
+            // Ana kategorileri ekle
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = 'Ana Kategoriler';
             
-            const option = document.createElement('option');
-            option.value = category._id;
-            option.textContent = category.name;
-            parentSelect.appendChild(option);
-        });
+            mainCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category._id;
+                option.textContent = category.name;
+                optgroup.appendChild(option);
+            });
+            
+            parentSelect.appendChild(optgroup);
+        }
     } catch (error) {
         showNotification('Üst kategoriler yüklenirken bir hata oluştu.', 'error');
         console.error('Error loading parent categories:', error);

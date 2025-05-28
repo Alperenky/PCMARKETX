@@ -85,11 +85,11 @@ function initProductsPage() {
  */
 function initProductFilters() {
     // Get filter elements
-    const filterCategory = document.getElementById('filterCategory');
-    const filterStatus = document.getElementById('filterStatus');
+    const filterCategory = document.getElementById('categoryFilter');
+    const filterStatus = document.getElementById('statusFilter');
     const filterPriceMin = document.getElementById('filterPriceMin');
     const filterPriceMax = document.getElementById('filterPriceMax');
-    const filterSearch = document.getElementById('filterSearch');
+    const filterSearch = document.getElementById('searchFilter');
     const resetFilters = document.getElementById('resetFilters');
     
     // Add event listeners to filters
@@ -116,11 +116,11 @@ function initProductFilters() {
  */
 function updateFilters() {
     // Update filter values
-    productFilters.category = document.getElementById('filterCategory').value;
-    productFilters.status = document.getElementById('filterStatus').value;
+    productFilters.category = document.getElementById('categoryFilter').value;
+    productFilters.status = document.getElementById('statusFilter').value;
     productFilters.priceMin = document.getElementById('filterPriceMin').value;
     productFilters.priceMax = document.getElementById('filterPriceMax').value;
-    productFilters.search = document.getElementById('filterSearch').value;
+    productFilters.search = document.getElementById('searchFilter').value;
     
     // Reset to first page and reload products
     currentPage = 1;
@@ -132,11 +132,11 @@ function updateFilters() {
  */
 function resetProductFilters() {
     // Reset filter values
-    document.getElementById('filterCategory').value = '';
-    document.getElementById('filterStatus').value = '';
+    document.getElementById('categoryFilter').value = '';
+    document.getElementById('statusFilter').value = '';
     document.getElementById('filterPriceMin').value = '';
     document.getElementById('filterPriceMax').value = '';
-    document.getElementById('filterSearch').value = '';
+    document.getElementById('searchFilter').value = '';
     
     // Clear filter object
     Object.keys(productFilters).forEach(key => {
@@ -155,14 +155,55 @@ async function loadCategoriesForFilters() {
     try {
         // Fetch all categories
         const response = await AdminAPI.getCategories({ limit: 100 });
-        const filterCategory = document.getElementById('filterCategory');
+        const filterCategory = document.getElementById('categoryFilter');
         
-        // Add categories as options
-        response.data.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category._id;
-            option.textContent = category.name;
-            filterCategory.appendChild(option);
+        // Clear existing options except the first one
+        while (filterCategory.options.length > 1) {
+            filterCategory.remove(1);
+        }
+        
+        // API'den dönen veri yapısını kontrol et
+        let categories = [];
+        if (Array.isArray(response)) {
+            // Doğrudan dizi olarak döndüyse
+            categories = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+            // data özelliği içinde dizi olarak döndüyse
+            categories = response.data;
+        } else if (response && typeof response === 'object') {
+            // response bir nesne ise ve categories içindeyse
+            categories = Object.values(response);
+        }
+        
+        console.log('Filtreler için yüklenen kategoriler:', categories);
+        
+        // Ana kategorileri bul
+        const mainCategories = categories.filter(cat => !cat.parent);
+        
+        // Ana kategorileri optgroup olarak ekle
+        mainCategories.forEach(mainCat => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = mainCat.name;
+            
+            // Ana kategorinin kendisini ekle
+            const mainOption = document.createElement('option');
+            mainOption.value = mainCat._id;
+            mainOption.textContent = `Tüm ${mainCat.name}`;
+            optgroup.appendChild(mainOption);
+            
+            // Alt kategorileri bul ve ekle
+            const subCategories = categories.filter(cat => 
+                cat.parent && (cat.parent._id === mainCat._id || cat.parent.id === mainCat._id)
+            );
+            
+            subCategories.forEach(subCat => {
+                const option = document.createElement('option');
+                option.value = subCat._id;
+                option.textContent = subCat.name;
+                optgroup.appendChild(option);
+            });
+            
+            filterCategory.appendChild(optgroup);
         });
     } catch (error) {
         showNotification('Kategoriler yüklenirken bir hata oluştu.', 'error');
@@ -186,20 +227,54 @@ async function loadCategoriesForProduct() {
         productCategory.appendChild(defaultOption);
         
         bulkCategory.innerHTML = '';
+        const defaultBulkOption = document.createElement('option');
+        defaultBulkOption.value = '';
+        defaultBulkOption.textContent = 'Kategori Seçin';
+        bulkCategory.appendChild(defaultBulkOption);
         
-        // Add categories as options
-        response.data.forEach(category => {
-            // For product form
-            const option1 = document.createElement('option');
-            option1.value = category._id;
-            option1.textContent = category.name;
-            productCategory.appendChild(option1);
+        // API'den dönen veri yapısını kontrol et
+        let categories = [];
+        if (Array.isArray(response)) {
+            // Doğrudan dizi olarak döndüyse
+            categories = response;
+        } else if (response && response.data && Array.isArray(response.data)) {
+            // data özelliği içinde dizi olarak döndüyse
+            categories = response.data;
+        } else if (response && typeof response === 'object') {
+            // response bir nesne ise ve categories içindeyse
+            categories = Object.values(response);
+        }
+        
+        console.log('Yüklenen kategoriler:', categories);
+        
+        // Ana kategorileri bul
+        const mainCategories = categories.filter(cat => !cat.parent);
+        
+        // Ana kategorileri optgroup olarak ekle (sadece ürün formu için)
+        mainCategories.forEach(mainCat => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = mainCat.name;
             
-            // For bulk actions
-            const option2 = document.createElement('option');
-            option2.value = category._id;
-            option2.textContent = category.name;
-            bulkCategory.appendChild(option2);
+            // Alt kategorileri bul ve ekle
+            const subCategories = categories.filter(cat => 
+                cat.parent && (cat.parent._id === mainCat._id || cat.parent.id === mainCat._id)
+            );
+            
+            subCategories.forEach(subCat => {
+                // Ürün formu için
+                const option1 = document.createElement('option');
+                option1.value = subCat._id;
+                option1.textContent = subCat.name;
+                optgroup.appendChild(option1);
+                
+                // Toplu işlemler için düz liste olarak ekle
+                const option2 = document.createElement('option');
+                option2.value = subCat._id;
+                option2.textContent = `${mainCat.name} > ${subCat.name}`;
+                bulkCategory.appendChild(option2);
+            });
+            
+            productCategory.appendChild(optgroup);
         });
     } catch (error) {
         showNotification('Kategoriler yüklenirken bir hata oluştu.', 'error');
@@ -214,6 +289,10 @@ async function loadCategoriesForProduct() {
 async function loadProducts(page = 1) {
     try {
         showLoading(document.querySelector('#productsTable').closest('.card-body'));
+        
+        // Veritabanı bağlantısını kontrol et
+        const isConnected = true; // Veritabanından gelecek verileri zorla kullanmak için
+        localStorage.setItem('mongodb_connected', 'true'); // MongoDB bağlantısının aktif olduğunu işaretle
         
         // Fetch products from API with filters
         const params = {
@@ -569,6 +648,7 @@ async function openProductModal(productId = null) {
             
             // Fetch the product details
             const product = await AdminAPI.getProductById(productId);
+            console.log("Düzenlenecek ürün bilgileri:", product);
             
             // Populate the form with product data
             document.getElementById('productId').value = product._id;
@@ -579,29 +659,57 @@ async function openProductModal(productId = null) {
             document.getElementById('productStock').value = product.stock;
             document.getElementById('productDiscount').value = product.discount || 0;
             document.getElementById('productDescription').value = product.description || '';
-            document.getElementById('productStatus').value = product.status || 'active';
+            
+            // Status alanını ayarla (enum: ['active', 'inactive', 'out_of_stock'])
+            const productStatusSelect = document.getElementById('productStatus');
+            if (product.status) {
+                const normalizedStatus = product.status.toLowerCase();
+                // Select listesindeki değeri ayarla
+                for (let i = 0; i < productStatusSelect.options.length; i++) {
+                    if (productStatusSelect.options[i].value === normalizedStatus) {
+                        productStatusSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                console.log(`Ürün status değeri: ${product.status} -> Seçilen: ${productStatusSelect.value}`);
+            } else {
+                // Varsayılan olarak 'active' seç
+                productStatusSelect.value = 'active';
+            }
+            
             document.getElementById('productFeatured').checked = product.featured || false;
             document.getElementById('productPopular').checked = product.popular || false;
+            document.getElementById('productNewProduct').checked = product.isNewProduct || false;
             
             // Set category if exists
             if (product.category) {
-                document.getElementById('productCategory').value = product.category._id;
+                document.getElementById('productCategory').value = product.category._id || product.category;
             }
             
             // Set image if exists
-            if (product.image) {
+            if (product.image || product.imageUrl) {
+                const imageUrl = product.image || product.imageUrl;
                 document.getElementById('productImagePreview').innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
+                    <img src="${imageUrl}" alt="${product.name}">
                 `;
             }
             
             // Set specifications if exist
-            if (product.specifications && product.specifications.length > 0) {
+            if (product.specifications && typeof product.specifications === 'object') {
                 document.getElementById('productSpecs').innerHTML = '';
                 
-                product.specifications.forEach(spec => {
-                    addSpecificationField(spec.key, spec.value);
-                });
+                // Map veya obje olduğunu kontrol et
+                if (product.specifications instanceof Map) {
+                    // Map ise entries ile dön
+                    for (const [key, value] of product.specifications.entries()) {
+                        addSpecificationField(key, value);
+                    }
+                } else {
+                    // Obje ise Object.entries ile dön
+                    for (const [key, value] of Object.entries(product.specifications)) {
+                        addSpecificationField(key, value);
+                    }
+                }
             }
         } catch (error) {
             showNotification('Ürün detayları yüklenirken bir hata oluştu.', 'error');
@@ -611,6 +719,8 @@ async function openProductModal(productId = null) {
         }
     } else {
         title.textContent = 'Yeni Ürün Ekle';
+        // Yeni ürün için varsayılan değerler
+        document.getElementById('productStatus').value = 'active';
     }
     
     // Show the modal
@@ -681,7 +791,12 @@ async function saveProduct() {
         formData.append('price', document.getElementById('productPrice').value);
         formData.append('stock', document.getElementById('productStock').value);
         formData.append('discount', document.getElementById('productDiscount').value);
-        formData.append('status', document.getElementById('productStatus').value);
+        
+        // Status değerini küçük harfle ekleyelim - enum değerleri 'active', 'inactive', 'out_of_stock'
+        const statusElement = document.getElementById('productStatus');
+        const statusValue = statusElement.value.toLowerCase();
+        formData.append('status', statusValue);
+        
         formData.append('description', document.getElementById('productDescription').value);
         formData.append('featured', document.getElementById('productFeatured').checked);
         formData.append('popular', document.getElementById('productPopular').checked);
@@ -689,7 +804,11 @@ async function saveProduct() {
         // Add image if uploaded
         const fileInput = document.getElementById('productImage');
         if (fileInput.files && fileInput.files[0]) {
-            formData.append('image', fileInput.files[0]);
+            const imageFile = fileInput.files[0];
+            console.log('Resim dosyası seçildi:', imageFile.name, 'Tip:', imageFile.type, 'Boyut:', imageFile.size);
+            
+            // formData nesnesine resmi ekle
+            formData.append('image', imageFile);
         }
         
         // Add specifications
@@ -705,28 +824,71 @@ async function saveProduct() {
         
         formData.append('specifications', JSON.stringify(specifications));
         
+        // FormData içeriğini konsola yazdır (hata ayıklama)
+        console.log('FormData içeriği:');
+        for (const pair of formData.entries()) {
+            if (pair[0] === 'image') {
+                console.log(`${pair[0]}: Dosya: ${pair[1].name}`);
+            } else {
+                console.log(`${pair[0]}: ${pair[1]}`);
+            }
+        }
+        
         // Get product ID
         const productId = document.getElementById('productId').value;
-        let response;
         
         if (productId) {
             // Update existing product
-            response = await AdminAPI.updateProduct(productId, formData);
-            showNotification('Ürün başarıyla güncellendi.', 'success');
+            console.log('Ürün güncelleniyor, ID:', productId);
+            try {
+                const response = await AdminAPI.updateProduct(productId, formData);
+                console.log('Ürün güncelleme yanıtı:', response);
+                
+                // Kapama ve yenileme işlemlerinden önce başarılı yanıtı doğrula
+                if (response && response._id) {
+                    // Close the modal
+                    document.getElementById('productModal').classList.remove('show');
+                    
+                    // Show success notification
+                    showNotification('Ürün başarıyla güncellendi.', 'success');
+                    
+                    // Reload products
+                    loadProducts(currentPage);
+                } else {
+                    throw new Error('API yanıtı geçersiz veya eksik');
+                }
+            } catch (error) {
+                console.error('Ürün güncellenirken hata oluştu:', error);
+                showNotification(`Ürün kaydedilirken hata oluştu: ${error.message}`, 'error');
+            }
         } else {
             // Create new product
-            response = await AdminAPI.createProduct(formData);
-            showNotification('Ürün başarıyla oluşturuldu.', 'success');
+            console.log('Yeni ürün oluşturuluyor');
+            try {
+                const response = await AdminAPI.createProduct(formData);
+                console.log('Ürün oluşturma yanıtı:', response);
+                
+                // Kapama ve yenileme işlemlerinden önce başarılı yanıtı doğrula
+                if (response && response._id) {
+                    // Close the modal
+                    document.getElementById('productModal').classList.remove('show');
+                    
+                    // Show success notification
+                    showNotification('Ürün başarıyla oluşturuldu.', 'success');
+                    
+                    // Reload products
+                    loadProducts(currentPage);
+                } else {
+                    throw new Error('API yanıtı geçersiz veya eksik');
+                }
+            } catch (error) {
+                console.error('Ürün oluşturulurken hata oluştu:', error);
+                showNotification(`Ürün kaydedilirken hata oluştu: ${error.message}`, 'error');
+            }
         }
-        
-        // Close the modal
-        document.getElementById('productModal').classList.remove('show');
-        
-        // Reload products
-        loadProducts(currentPage);
     } catch (error) {
-        showNotification('Ürün kaydedilirken bir hata oluştu.', 'error');
-        console.error('Error saving product:', error);
+        console.error('Ürün kaydedilirken genel hata:', error);
+        showNotification(`Ürün kaydedilirken hata oluştu: ${error.message}`, 'error');
     }
 }
 

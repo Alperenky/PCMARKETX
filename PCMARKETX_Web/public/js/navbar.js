@@ -1,8 +1,85 @@
-// Navbar.js - Navbar işlemleri
+/**
+ * Navbar.js - Navbar işlevleri
+ */
 
+// Global showNotification fonksiyonu
+function showNotification(message, type = 'info') {
+  // Hali hazırda varsa eski bildirimi temizle
+  const existingNotification = document.querySelector('.notification');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+  
+  // Yeni bildirim oluştur
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span class="notification-message">${message}</span>
+      <button class="notification-close">&times;</button>
+    </div>
+  `;
+  
+  // Body'ye ekle
+  document.body.appendChild(notification);
+  
+  // Animasyon için sınıf ekle
+  setTimeout(() => {
+    notification.classList.add('active');
+  }, 10);
+  
+  // Kapatma butonu işlevi
+  const closeBtn = notification.querySelector('.notification-close');
+  closeBtn.addEventListener('click', () => {
+    notification.classList.remove('active');
+    setTimeout(() => {
+      notification.remove();
+    }, 300); // Animasyon süresi
+  });
+  
+  // Otomatik kapanma
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.classList.remove('active');
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 300); // Animasyon süresi
+    }
+  }, 5000); // 5 saniye sonra kapat
+}
+
+// Belgenin yüklenmesi tamamlandığında çalışacak kod
 document.addEventListener('DOMContentLoaded', function() {
-  // Mobil menü düğmesi
-  setupMobileMenu();
+    // Kullanıcı menüsünü aç/kapat
+    const accountAction = document.getElementById('account-action');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+    
+    if (accountAction && userDropdownMenu) {
+        // Menü toggle
+        accountAction.addEventListener('click', function(e) {
+            e.preventDefault();
+            userDropdownMenu.classList.toggle('active');
+        });
+        
+        // Dışarı tıklandığında kapat
+        document.addEventListener('click', function(e) {
+            if (!accountAction.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                userDropdownMenu.classList.remove('active');
+            }
+        });
+    }
+    
+    // Mobil menü
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    const mainNav = document.querySelector('.main-nav');
+    
+    if (mobileToggle && mainNav) {
+        mobileToggle.addEventListener('click', function() {
+            mainNav.classList.toggle('active');
+        });
+    }
   
   // Mega menü
   setupMegaMenu();
@@ -16,25 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Favoriler sayısını güncelle
   updateFavoritesCount();
 });
-
-// Mobil menü düğmesi
-function setupMobileMenu() {
-  const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-  const mainNav = document.querySelector('.main-nav');
-  const searchBox = document.querySelector('.search-box');
-  
-  if (mobileMenuToggle && mainNav) {
-    mobileMenuToggle.addEventListener('click', function() {
-      mainNav.classList.toggle('active');
-      this.classList.toggle('active');
-      
-      // Mobil görünümde arama kutusunu göster/gizle
-      if (searchBox && window.innerWidth <= 768) {
-        searchBox.classList.toggle('active');
-      }
-    });
-  }
-}
 
 // Mega menü
 function setupMegaMenu() {
@@ -106,13 +164,14 @@ function updateCartCount() {
   if (!cartCountElement) return;
   
   // localStorage'dan sepet bilgilerini al
-  const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
   
   // Sepet sayısını güncelle
-  cartCountElement.textContent = cartItems.length;
+  const count = cart.reduce((total, item) => total + item.quantity, 0);
+  cartCountElement.textContent = count;
   
   // Sepet boş değilse animasyon ekle
-  if (cartItems.length > 0) {
+  if (count > 0) {
     cartCountElement.classList.add('pulse');
     setTimeout(() => {
       cartCountElement.classList.remove('pulse');
@@ -130,30 +189,6 @@ function updateFavoritesCount() {
   
   // Favoriler sayısını güncelle
   favoritesCountElement.textContent = favorites.length;
-}
-
-// Bildirim gösterme
-function showNotification(message, type = 'primary') {
-  // Bildirim elementi oluştur
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-  
-  // Body'ye ekle
-  document.body.appendChild(notification);
-  
-  // Bildirimi göster
-  setTimeout(() => {
-    notification.classList.add('show');
-  }, 10);
-  
-  // 3 saniye sonra bildirimi kaldır
-  setTimeout(() => {
-    notification.classList.remove('show');
-    setTimeout(() => {
-      notification.remove();
-    }, 300);
-  }, 3000);
 }
 
 // Add notification styles

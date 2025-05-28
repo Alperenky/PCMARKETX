@@ -8,91 +8,87 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css">
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
+  <link rel="stylesheet" href="/css/popular-products.css">
+  <link rel="stylesheet" href="/css/new-products.css">
+  <link rel="stylesheet" href="/css/modern-slider.css">
+  <link rel="stylesheet" href="/css/notification.css">
+  <link rel="stylesheet" href="/css/chatbot.css">
 </head>
 <body>
   <!-- Navbar Container -->
   <div id="navbar-container"></div>
 
   <main>
-    <!-- Hero Slider -->
-    <section class="hero-slider">
-      <div class="hero-slide" style="background-image: url('/images/slider/slide1.jpg');">
-        <div class="hero-slide-content">
-          <h2>Yeni Nesil Ekran Kartları</h2>
-          <p>En yeni NVIDIA ve AMD ekran kartları şimdi PC MARKET X'te!</p>
-          <a href="/category/ekran-kartlari.html" class="btn btn-primary">Hemen İncele</a>
-        </div>
-      </div>
-      <div class="hero-slide" style="background-image: url('/images/slider/slide2.jpg');">
-        <div class="hero-slide-content">
-          <h2>Gaming Bilgisayarlar</h2>
-          <p>Oyun deneyiminizi bir üst seviyeye taşıyın!</p>
-          <a href="/category/gaming-bilgisayarlar.html" class="btn btn-primary">Keşfet</a>
-        </div>
-      </div>
-      <div class="hero-slide" style="background-image: url('/images/slider/slide3.jpg');">
-        <div class="hero-slide-content">
-          <h2>Yaz İndirimleri</h2>
-          <p>Tüm ürünlerde %50'ye varan indirimler!</p>
-          <a href="/campaigns.html" class="btn btn-primary">Fırsatları Kaçırma</a>
+    <!-- Modern Hero Slider -->
+    <section class="modern-hero-section">
+      <div class="modern-hero-container">
+        <div class="modern-slider-wrapper">
+          <div class="modern-slider-content">
+            <div class="modern-slider">
+              <!-- Slider 1 -->
+              <div>
+                <div class="modern-slider-slide">
+                  <h2 class="modern-slider-title">Yeni Nesil Ekran Kartları</h2>
+                  <p class="modern-slider-subtitle">En yeni NVIDIA ve AMD ekran kartları şimdi PC MARKET X'te! Oyun ve grafik deneyiminizi en üst seviyeye çıkarın.</p>
+                  <a href="/category/ekran-kartlari.html" class="modern-slider-button">Hemen İncele</a>
+                </div>
+              </div>
+              
+              <!-- Slider 2 -->
+              <div>
+                <div class="modern-slider-slide">
+                  <h2 class="modern-slider-title">Gaming Bilgisayarlar</h2>
+                  <p class="modern-slider-subtitle">Oyun deneyiminizi bir üst seviyeye taşıyın! Yüksek performanslı gaming bilgisayarlar ile rakiplerinizi geride bırakın.</p>
+                  <a href="/category/gaming-bilgisayarlar.html" class="modern-slider-button">Keşfet</a>
+                </div>
+              </div>
+              
+              <!-- Slider 3 -->
+              <div>
+                <div class="modern-slider-slide">
+                  <h2 class="modern-slider-title">Yaz İndirimleri</h2>
+                  <p class="modern-slider-subtitle">Tüm ürünlerde %50'ye varan indirimler! Sınırlı süre için geçerli kampanyaları kaçırmayın.</p>
+                  <a href="/campaigns.html" class="modern-slider-button">Fırsatları Kaçırma</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modern-slider-image" id="sliderRightImage">
+            <img src="/images/slider/rtx4090.png" alt="RTX 4090 Ekran Kartı" id="sliderImage1">
+            <img src="/images/slider/gaming-pc.png" alt="Gaming Bilgisayar" id="sliderImage2" style="opacity: 0;">
+            <img src="/images/slider/sale.png" alt="Yaz İndirimleri" id="sliderImage3" style="opacity: 0;">
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Categories -->
-    <section class="section categories">
+    <!-- Popüler Ürünler -->
+    <section class="popular-products">
       <div class="container">
-        <h2 class="section-title">Kategoriler <a href="/categories.html">Tümünü Gör</a></h2>
-        <div class="category-grid">
-          <a href="/category/islemciler.html" class="category-card">
-            <img src="/images/categories/cpu.png" alt="İşlemciler">
-            <h3>İşlemciler</h3>
-          </a>
-          <a href="/category/ekran-kartlari.html" class="category-card">
-            <img src="/images/categories/gpu.png" alt="Ekran Kartları">
-            <h3>Ekran Kartları</h3>
-          </a>
-          <a href="/category/anakartlar.html" class="category-card">
-            <img src="/images/categories/motherboard.png" alt="Anakartlar">
-            <h3>Anakartlar</h3>
-          </a>
-          <a href="/category/ram-bellek.html" class="category-card">
-            <img src="/images/categories/ram.png" alt="RAM & Bellek">
-            <h3>RAM & Bellek</h3>
-          </a>
-          <a href="/category/depolama.html" class="category-card">
-            <img src="/images/categories/storage.png" alt="Depolama">
-            <h3>Depolama</h3>
-          </a>
-          <a href="/category/monitorler.html" class="category-card">
-            <img src="/images/categories/monitor.png" alt="Monitörler">
-            <h3>Monitörler</h3>
-          </a>
-          <a href="/category/kasalar.html" class="category-card">
-            <img src="/images/categories/case.png" alt="Kasalar">
-            <h3>Kasalar</h3>
-          </a>
-          <a href="/category/guc-kaynaklari.html" class="category-card">
-            <img src="/images/categories/power-supply.png" alt="Güç Kaynakları">
-            <h3>Güç Kaynakları</h3>
-          </a>
-          <a href="/category/sogutma-sistemleri.html" class="category-card">
-            <img src="/images/categories/cooling.png" alt="Soğutma Sistemleri">
-            <h3>Soğutma Sistemleri</h3>
-          </a>
-          <a href="/category/klavyeler.html" class="category-card">
-            <img src="/images/categories/keyboard.png" alt="Klavyeler">
-            <h3>Klavyeler</h3>
-          </a>
-          <a href="/category/mouse.html" class="category-card">
-            <img src="/images/categories/mouse.png" alt="Mouse">
-            <h3>Mouse</h3>
-          </a>
-          <a href="/category/kulakliklar.html" class="category-card">
-            <img src="/images/categories/headphones.png" alt="Kulaklıklar">
-            <h3>Kulaklıklar</h3>
-          </a>
+        <div class="section-title">
+          <h2>Popüler Ürünler</h2>
         </div>
+        
+        <div class="product-grid">
+          <!-- Ürünler JavaScript ile dinamik olarak yüklenecek -->
+        </div>
+        
+        
+      </div>
+    </section>
+
+    <!-- Yeni Ürünler -->
+    <section class="new-products">
+      <div class="container">
+        <div class="section-title">
+          <h2>Yeni Ürünler</h2>
+        </div>
+        
+        <div class="product-grid">
+          <!-- Ürünler JavaScript ile dinamik olarak yüklenecek -->
+        </div>
+        
       </div>
     </section>
 
@@ -140,19 +136,6 @@
       </div>
     </section>
 
-    <!-- Newsletter -->
-    <section class="newsletter">
-      <div class="container">
-        <div class="newsletter-content">
-          <h2>Bültenimize Abone Olun</h2>
-          <p>En yeni ürünler, kampanyalar ve indirimlerden haberdar olmak için bültenimize abone olun.</p>
-          <form class="newsletter-form">
-            <input type="email" placeholder="E-posta adresiniz" required>
-            <button type="submit">Abone Ol</button>
-          </form>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer>
@@ -205,20 +188,92 @@
       <div class="footer-bottom">
         <p>&copy; 2023 PC MARKET X. Tüm hakları saklıdır.</p>
         <div class="payment-methods">
-          <img src="/images/payment/visa.png" alt="Visa">
-          <img src="/images/payment/mastercard.png" alt="Mastercard">
-          <img src="/images/payment/paypal.png" alt="PayPal">
-          <img src="/images/payment/troy.png" alt="Troy">
+         
         </div>
       </div>
     </div>
   </footer>
 
   <!-- Scripts -->
+  <!-- Önce jQuery ve Slick Carousel -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+  
+  <!-- Sonra kendi script'lerimiz -->
   <script src="/js/navbar.js"></script>
   <script src="/js/navbar-loader.js"></script>
+  <script src="/js/modern-slider.js"></script>
   <script src="/js/main.js"></script>
+  <script src="/js/featured-products.js"></script>
+  <script src="/js/new-products.js"></script>
+  <script src="/js/chatbot.js"></script>
+
+  <!-- Sayfa tamamen yüklendikten sonra favori butonları başlat -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM yüklendi, favori butonları başlatılıyor...');
+      
+      // İlk yükleme sırasında sorun varsa 1 saniye bekleyip tekrar dene
+      setTimeout(function() {
+        console.log('Gecikme sonrası favori butonları kontrol ediliyor...');
+        
+        // Popüler ürünler favori butonları
+        const popularFavoriteButtons = document.querySelectorAll('.popular-products .favorite-btn');
+        if (popularFavoriteButtons.length > 0) {
+          console.log('Popüler ürün favori butonları bulundu, event listener ekleniyor:', popularFavoriteButtons.length);
+          
+          popularFavoriteButtons.forEach(button => {
+            button.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Popüler ürün favori butonuna tıklandı');
+              
+              const productId = this.dataset.productId;
+              if (!productId) {
+                console.error('Ürün ID bulunamadı!');
+                return;
+              }
+              
+              if (typeof toggleFavorite === 'function') {
+                toggleFavorite(this, productId);
+              } else {
+                console.error('toggleFavorite fonksiyonu bulunamadı!');
+              }
+            };
+          });
+        } else {
+          console.warn('Popüler ürün favori butonları bulunamadı!');
+        }
+        
+        // Yeni ürünler favori butonları
+        const newFavoriteButtons = document.querySelectorAll('.new-products .favorite-btn');
+        if (newFavoriteButtons.length > 0) {
+          console.log('Yeni ürün favori butonları bulundu, event listener ekleniyor:', newFavoriteButtons.length);
+          
+          newFavoriteButtons.forEach(button => {
+            button.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Yeni ürün favori butonuna tıklandı');
+              
+              const productId = this.dataset.productId;
+              if (!productId) {
+                console.error('Ürün ID bulunamadı!');
+                return;
+              }
+              
+              if (typeof toggleFavorite === 'function') {
+                toggleFavorite(this, productId);
+              } else {
+                console.error('toggleFavorite fonksiyonu bulunamadı!');
+              }
+            };
+          });
+        } else {
+          console.warn('Yeni ürün favori butonları bulunamadı!');
+        }
+      }, 1000);
+    });
+  </script>
 </body>
 </html> 

@@ -324,6 +324,90 @@ const deleteUserAddress = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Kullanıcının favorilerini getir
+// @route   GET /api/users/favorites
+// @access  Private
+const getUserFavorites = asyncHandler(async (req, res) => {
+  try {
+    // Kullanıcı bilgilerini favorites dizisini populate ederek getir
+    const user = await User.findById(req.user._id).populate({
+      path: 'favorites',
+      select: '_id name price imageUrl images discount' // Sadece ihtiyaç duyulan alanları getir
+    });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'Kullanıcı bulunamadı' });
+    }
+    
+    // Eğer favori dizisi yoksa veya null ise boş dizi döndür
+    if (!user.favorites) {
+      return res.json([]);
+    }
+    
+    // Null olan favori öğelerini filtrele
+    const validFavorites = user.favorites.filter(favorite => favorite);
+    
+    res.json(validFavorites);
+  } catch (error) {
+    console.error('Favorileri getirirken hata oluştu:', error);
+    res.status(500).json({ 
+      message: 'Favoriler yüklenirken bir hata oluştu',
+      error: error.message
+    });
+  }
+});
+
+// @desc    Favorilere ürün ekle
+// @route   POST /api/users/favorites
+// @access  Private
+const addToFavorites = asyncHandler(async (req, res) => {
+  const { productId } = req.body;
+  
+  if (!productId) {
+    res.status(400);
+    throw new Error('Ürün ID\'si gereklidir');
+  }
+  
+  const user = await User.findById(req.user._id);
+  
+  if (!user) {
+    res.status(404);
+    throw new Error('Kullanıcı bulunamadı');
+  }
+  
+  // Ürün zaten favorilerde mi kontrol et
+  if (user.favorites.includes(productId)) {
+    res.status(400);
+    throw new Error('Bu ürün zaten favorilerinizde');
+  }
+  
+  // Ürünü favorilere ekle
+  user.favorites.push(productId);
+  await user.save();
+  
+  res.status(201).json({ message: 'Ürün favorilere eklendi' });
+});
+
+// @desc    Favorilerden ürün kaldır
+// @route   DELETE /api/users/favorites/:productId
+// @access  Private
+const removeFromFavorites = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+  
+  const user = await User.findById(req.user._id);
+  
+  if (!user) {
+    res.status(404);
+    throw new Error('Kullanıcı bulunamadı');
+  }
+  
+  // Ürünü favorilerden kaldır
+  user.favorites = user.favorites.filter(id => id.toString() !== productId);
+  await user.save();
+  
+  res.json({ message: 'Ürün favorilerden kaldırıldı' });
+});
+
 module.exports = {
   registerUser,
   loginUser,
@@ -335,5 +419,8 @@ module.exports = {
   getUserAddresses,
   addUserAddress,
   updateUserAddress,
-  deleteUserAddress
+  deleteUserAddress,
+  getUserFavorites,
+  addToFavorites,
+  removeFromFavorites
 }; 

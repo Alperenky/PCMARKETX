@@ -1,21 +1,109 @@
 // Admin API için JavaScript - MongoDB Atlas ile etkileşim
 
-const adminAPI = {
-    // API temel URL - veritabanına doğrudan bağlantı için
-    baseURL: '/api',
-    
-    // Genel request fonksiyonu
-    async request(endpoint, method = 'GET', data = null) {
-        try {
-            const url = this.baseURL + endpoint;
-            console.log('API çağrısı:', url, method);
+// MongoDB bağlantı durumunu kaydet
+(function() {
+    // Sunucu başlatıldığında MongoDB bağlantısı başarılı olduğunda bu fonksiyon çağrılır
+    const markMongodbConnected = function() {
+        localStorage.setItem('mongodb_connected', 'true');
+        console.log('MongoDB bağlantısı başarılı olarak işaretlendi');
+    };
+
+    // MongoDB bağlantısını varsayılan olarak true yap
+    localStorage.setItem('mongodb_connected', 'true');
+
+    // Sunucu mesajlarını dinle
+    if (typeof window !== 'undefined') {
+        // Sayfa yüklendikten sonra bağlantı durumunu kontrol et
+        window.addEventListener('DOMContentLoaded', function() {
+            // MongoDB'yi her zaman bağlı kabul et
+            markMongodbConnected();
             
-            // API endpointiniz olup olmadığını kontrol edin
-            // Eğer API server tarafında hazır değilse, simulasyon verilerini kullanacağız
-            if (!this.isApiAvailable()) {
-                console.log('API kullanılamıyor, simulasyon verisi döndürülüyor.');
+            // Sunucudan gelen bağlantı mesajını kontrol et (opsiyonel)
+            if (document.body.dataset.mongodbConnected === 'true') {
+                markMongodbConnected();
+            } else if (window.location.href.includes('admin')) {
+                // Admin sayfasında otomatik API testi yap
+                setTimeout(() => {
+                    AdminAPI.testApiConnection()
+                      .then(result => {
+                          if (result && result.success) {
+                              markMongodbConnected();
+                          }
+                      })
+                      .catch(err => console.warn('API test hatası:', err));
+                }, 500);
+            }
+        });
+    }
+})();
+
+// API URL'lerini normalleştiren yardımcı fonksiyon
+function normalizeUrl(url) {
+    // URL'in başında / olduğundan emin ol
+    if (!url.startsWith('/')) {
+        url = '/' + url;
+    }
+    
+    // URL'in önünde /api olduğundan emin ol
+    if (!url.startsWith('/api/')) {
+        if (url.startsWith('/admin/')) {
+            url = '/api' + url; // /admin/ --> /api/admin/
+        } else {
+            url = '/api/admin' + url; // /products --> /api/admin/products
+        }
+    } else if (!url.includes('/admin/') && url.startsWith('/api/')) {
+        // /api/ ile başlıyor ama /admin/ içermiyor, /api/admin/ yapalım
+        url = url.replace('/api/', '/api/admin/');
+    }
+    
+    return url;
+}
+
+// Admin API Sınıfı
+class AdminAPI {
+    
+    // API bağlantısını test et
+    static async testApiConnection() {
+        try {
+            const response = await fetch('/api/admin/stats');
+            if (response.ok) {
+                return { success: true };
+            } else {
+                // Eğer 404 alırsak, simüle veriler kullanmaya devam edelim
+                if (response.status === 404) {
+                    console.log('API endpoint bulunamadı, simülasyon modu kullanılıyor');
+                    return { success: false, error: `HTTP ${response.status}` };
+                }
+                
+                // MongoDB bağlantısını kontrol etmek için başka bir endpoint deneyelim
+                const productsResponse = await fetch('/api/admin/products');
+                if (productsResponse.ok) {
+                    return { success: true };
+                }
+                
+                console.warn('API bağlantı testi başarısız:', response.status);
+                return { success: false, error: `HTTP ${response.status}` };
+            }
+        } catch (error) {
+            console.error('API test hatası:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    
+    // API İstekleri için temel metot
+    static async request(endpoint, method = 'GET', data = null) {
+        try {
+            // MongoDB bağlantısını kontrol et
+            const isConnected = localStorage.getItem('mongodb_connected') === 'true';
+            
+            // MongoDB bağlantısı yoksa ve simülasyon verilerini kullanabiliriz
+            if (!isConnected && this.isApiAvailable() === false) {
+                console.log(`Simülasyon verisi kullanılıyor: ${endpoint}`);
                 return this._getSimulationData(endpoint, method, data);
             }
+            
+            // URL'i normalleştir
+            endpoint = normalizeUrl(endpoint);
             
             const options = {
                 method,
@@ -24,257 +112,407 @@ const adminAPI = {
                 }
             };
             
-            // Auth token ekle
+            // Yetkili kullanıcı için token ekle
             const token = this.getAuthToken();
             if (token) {
                 options.headers['Authorization'] = `Bearer ${token}`;
             }
             
-            // POST, PUT gibi istekler için body ekle
-            if (data && method !== 'GET') {
+            // POST, PUT, DELETE istekleri için body parametresi ekle
+            if (method !== 'GET' && data !== null) {
                 options.body = JSON.stringify(data);
             }
             
-            const response = await fetch(url, options);
-            console.log('API yanıtı status:', response.status);
+            console.log(`API isteği: ${method} ${endpoint}`);
             
-            // Unauthorized ise login sayfasına yönlendir
-            if (response.status === 401) {
-                this.redirectToLogin();
-                throw new Error('Yetkisiz erişim');
+            // İsteği gönder
+            const response = await fetch(endpoint, options);
+            
+            // JSON olmayan yanıtlar için (örneğin, dosya indirme)
+            if (!response.headers.get('content-type')?.includes('application/json')) {
+                if (!response.ok) {
+                    throw new Error(`HTTP Hata: ${response.status}`);
+                }
+                return response;
             }
             
-            // 404 hatası - endpoint bulunamadı
-            if (response.status === 404) {
-                console.warn('API endpoint bulunamadı, simulasyon verileri kullanılıyor:', endpoint);
-                return this._getSimulationData(endpoint, method, data);
-            }
+            // JSON yanıtını parse et
+            const responseData = await response.json();
             
-            const result = await response.json();
-            console.log('API yanıt data:', result);
-            
+            // Hata kontrolü
             if (!response.ok) {
-                throw new Error(result.message || 'API hatası');
+                const error = new Error(responseData.message || `HTTP Hata: ${response.status}`);
+                error.status = response.status;
+                error.data = responseData;
+                throw error;
             }
             
-            return result;
+            return responseData;
         } catch (error) {
-            console.error('API hatası:', error);
+            console.error(`API İsteği Başarısız (${endpoint}):`, error);
             
-            // API kullanılamıyorsa simulasyon verilerini kullan
-            if (error.message.includes('Failed to fetch') || 
-                error.message.includes('NetworkError') || 
-                error.message.includes('API endpoint bulunamadı')) {
-                console.warn('API bağlantı hatası, simulasyon verileri kullanılıyor.');
+            // MongoDB bağlantısı yoksa simülasyon verilerini dene
+            if (this.isApiAvailable() === false) {
+                console.log(`Simülasyon verisi kullanılıyor (hata sonrası): ${endpoint}`);
                 return this._getSimulationData(endpoint, method, data);
             }
             
             throw error;
         }
-    },
+    }
     
-    // API'nin kullanılabilir olup olmadığını kontrol et
-    isApiAvailable() {
-        // Burada API durumunu kontrol edebilirsiniz
-        // Şimdilik her zaman false döndürerek simulasyon verilerini kullanacağız
-        return false;
-    },
-    
-    // Simulasyon verileri - API olmadığında kullanılır
-    _getSimulationData(endpoint, method, data) {
-        console.log('Simulasyon verisi oluşturuluyor:', endpoint, method);
+    // API erişilebilirliğini kontrol et
+    static isApiAvailable() {
+        // MongoDB bağlantı durumunu localStorage'dan kontrol et
+        const isConnected = localStorage.getItem('mongodb_connected') === 'true';
         
-        // Ürünler için simulasyon verileri
-        if (endpoint.startsWith('/admin/products') || endpoint.startsWith('/products')) {
-            // URL'den ürün ID'si var mı kontrol et
-            const urlParts = endpoint.split('/');
-            const isDetailRequest = urlParts.length > 2 && !endpoint.includes('bulk');
+        // Bağlantı durumu biliniyorsa onu kullan
+        if (isConnected !== null) {
+            return isConnected;
+        }
+        
+        // Her zaman MongoDB'yi kullanmayı zorla
+        return true;
+    }
+    
+    // Simülasyon verileri
+    static _getSimulationData(endpoint, method, data) {
+        console.log(`Simülasyon verisi kullanılıyor: ${endpoint} (${method})`);
+        
+        // endpoint'i normalleştir ve parse et
+        endpoint = normalizeUrl(endpoint);
+        const url = new URL(endpoint, window.location.origin);
+        const path = url.pathname;
+        const searchParams = url.searchParams;
+        
+        // GET istekleri için
+        if (method === 'GET') {
+            // Ürünleri getir
+            if (path.includes('/products') && !path.includes('/products/')) {
+                return this._getSimulatedProducts(searchParams);
+            }
             
-            if (isDetailRequest) {
-                // Tek bir ürün detayı
-                const productId = urlParts[urlParts.length - 1]; 
-                console.log('Ürün detayı talebi:', productId);
+            // Ürün detayı
+            if (path.match(/\/products\/[a-zA-Z0-9]+/)) {
+                const productId = path.split('/').pop();
                 return this._getSimulatedProduct(productId);
-            } else {
-                // Ürün listesi
-                console.log('Ürün listesi talebi');
-                return this._getSimulatedProducts(data);
-            }
-        }
-        
-        // İstatistikler için simulasyon verileri
-        if (endpoint.startsWith('/admin/stats') || endpoint.startsWith('/stats')) {
-            return this._getSimulatedStats();
-        }
-        
-        // Siparişler için simulasyon verileri
-        if (endpoint.startsWith('/admin/orders') || endpoint.startsWith('/orders')) {
-            return this._getSimulatedOrders();
-        }
-        
-        // Varsayılan boş yanıt
-        return { success: true, message: 'Simulasyon verisi' };
-    },
-    
-    // Simulasyon ürün listesi
-    _getSimulatedProducts() {
-        const defaultProducts = [
-            { id: 'PRD-001', name: 'NVIDIA RTX 4080', category: 'Ekran Kartları', price: 29999, stock: 15, featured: true, image: '/images/products/rtx4080.jpg' },
-            { id: 'PRD-002', name: 'AMD Ryzen 9 7950X', category: 'İşlemciler', price: 14999, stock: 22, featured: true, image: '/images/products/ryzen9.jpg' },
-            { id: 'PRD-003', name: 'Samsung 980 PRO 2TB', category: 'Depolama', price: 3299, stock: 38, featured: false, image: '/images/products/samsung980.jpg' },
-            { id: 'PRD-004', name: 'ASUS ROG STRIX Z790-F', category: 'Anakartlar', price: 7899, stock: 10, featured: false, image: '/images/products/rogstrix.jpg' },
-            { id: 'PRD-005', name: 'Corsair Dominator 32GB DDR5', category: 'RAM', price: 3899, stock: 0, featured: false, image: '/images/products/corsair-ram.jpg' },
-            { id: 'PRD-006', name: 'be quiet! Dark Power 12 1000W', category: 'Güç Kaynakları', price: 4999, stock: 8, featured: false, image: '/images/products/bequiet.jpg' },
-            { id: 'PRD-007', name: 'NZXT H7 Flow', category: 'Kasalar', price: 2799, stock: 12, featured: false, image: '/images/products/nzxt.jpg' },
-            { id: 'PRD-008', name: 'Logitech G Pro X Superlight', category: 'Çevre Birimleri', price: 2199, stock: 25, featured: true, image: '/images/products/logitech.jpg' },
-            { id: 'PRD-009', name: 'Noctua NH-D15', category: 'Soğutma', price: 1899, stock: 5, featured: false, image: '/images/products/noctua.jpg' },
-            { id: 'PRD-010', name: 'LG UltraGear 27GP950', category: 'Monitörler', price: 15999, stock: 7, featured: true, image: '/images/products/lg.jpg' }
-        ];
-        
-        // LocalStorage'dan kaydedilmiş ürünleri al
-        let simulatedProducts = [];
-        try {
-            const savedProducts = localStorage.getItem('simulatedProducts');
-            if (savedProducts) {
-                const parsed = JSON.parse(savedProducts);
-                // Ayrıştırılan veri bir dizi mi kontrol et
-                if (Array.isArray(parsed)) {
-                    simulatedProducts = parsed;
-                } else {
-                    console.error('LocalStorage\'dan alınan ürünler bir dizi değil:', parsed);
-                    simulatedProducts = defaultProducts;
-                }
-            } else {
-                console.log('LocalStorage\'da kayıtlı ürün bulunamadı, varsayılan ürünler kullanılıyor.');
-                simulatedProducts = defaultProducts;
-            }
-        } catch (error) {
-            console.error('LocalStorage veri okuma hatası:', error);
-            simulatedProducts = defaultProducts;
-        }
-        
-        // Son kontrol - boş dizi durumunda varsayılan ürünleri kullan
-        if (!simulatedProducts || !Array.isArray(simulatedProducts) || simulatedProducts.length === 0) {
-            console.warn('Geçerli ürün dizisi oluşturulamadı, varsayılan ürünler kullanılıyor.');
-            simulatedProducts = defaultProducts;
-        }
-        
-        console.log('Simulasyon ürünleri yüklendi:', simulatedProducts.length);
-        
-        return {
-            products: simulatedProducts,
-            total: simulatedProducts.length,
-            page: 1,
-            totalPages: Math.ceil(simulatedProducts.length / 10)
-        };
-    },
-    
-    // Simulasyon ürünlerini kaydet
-    _saveSimulatedProducts(products) {
-        try {
-            // Ürünlerin bir dizi olduğundan emin ol
-            if (!products || !Array.isArray(products)) {
-                console.error('Kaydedilecek ürünler bir dizi değil:', products);
-                return false;
             }
             
-            localStorage.setItem('simulatedProducts', JSON.stringify(products));
-            console.log('Simulasyon ürünleri localStorage\'a kaydedildi:', products.length);
-            return true;
-        } catch (error) {
-            console.error('LocalStorage kaydetme hatası:', error);
-            return false;
+            // Kategorileri getir
+            if (path.includes('/categories') && !path.includes('/categories/')) {
+                return this._getSimulatedCategories();
+            }
+            
+            // Kategori detayı
+            if (path.match(/\/categories\/[a-zA-Z0-9]+/)) {
+                const categoryId = path.split('/').pop();
+                return this._getSimulatedCategoryById(categoryId);
+            }
+            
+            // İstatistikler
+            if (path.includes('/stats')) {
+                return this._getSimulatedStats();
+            }
+            
+            // Siparişler
+            if (path.includes('/orders') && !path.includes('/orders/')) {
+                return this._getSimulatedOrders();
+            }
         }
-    },
-    
-    // Simulasyon tek ürün detayı
-    _getSimulatedProduct(productId) {
-        const products = this._getSimulatedProducts().products;
-        const product = products.find(p => p.id === productId) || products[0];
+        
+        // POST, PUT, DELETE gibi diğer istek türleri için
+        // Burada simüle edilmiş bir yanıt dönebilirsin
         
         return {
-            ...product,
-            description: 'Bu bir örnek ürün açıklamasıdır. Bu alanda ürün özellikleri ve detayları yer alır.',
-            specs: {
-                'İşlemci': 'Intel Core i9-13900K',
-                'RAM': '32GB DDR5',
-                'Depolama': '2TB NVMe SSD',
-                'Ekran Kartı': 'NVIDIA RTX 4080 16GB'
-            }
+            success: true,
+            message: 'Simüle edilmiş işlem başarılı',
+            data: data
         };
-    },
+    }
     
-    // Simulasyon istatistik verileri
-    _getSimulatedStats() {
-        return {
-            totalOrders: 142,
-            totalSales: 56840,
-            totalCustomers: 89,
-            totalProducts: 246,
-            recentOrders: [
-                { id: 'ORD-1001', date: new Date(), customer: 'Ahmet Yılmaz', total: 2450, status: 'Tamamlandı' },
-                { id: 'ORD-1002', date: new Date(), customer: 'Mehmet Kaya', total: 1850, status: 'İşleniyor' },
-                { id: 'ORD-1003', date: new Date(), customer: 'Ayşe Demir', total: 3200, status: 'Kargoya Verildi' }
+    // Simüle edilmiş ürünleri getir
+    static _getSimulatedProducts() {
+        const cachedProducts = localStorage.getItem('simulated_products');
+        
+        if (cachedProducts) {
+            try {
+                return JSON.parse(cachedProducts);
+            } catch (e) {
+                console.error('Önbellek ürünleri parse edilemedi:', e);
+            }
+        }
+        
+        // Varsayılan ürünler
+        const products = {
+            data: [
+                {
+                    _id: '1',
+                    name: 'NVIDIA RTX 4090',
+                    price: 42999.99,
+                    stock: 10,
+                    brand: 'NVIDIA',
+                    category: {
+                        _id: '1',
+                        name: 'Ekran Kartları'
+                    },
+                    description: 'En güçlü ekran kartı',
+                    isActive: true,
+                    isNewProduct: true,
+                    featured: true,
+                    images: ['/images/products/rtx-4090.jpg'],
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    _id: '2',
+                    name: 'AMD Ryzen 9 7950X',
+                    price: 18999.99,
+                    stock: 15,
+                    brand: 'AMD',
+                    category: {
+                        _id: '2',
+                        name: 'İşlemciler'
+                    },
+                    description: 'Yüksek performanslı işlemci',
+                    isActive: true,
+                    isNewProduct: true,
+                    featured: false,
+                    images: ['/images/products/ryzen-7950x.jpg'],
+                    createdAt: new Date().toISOString()
+                }
             ],
-            popularProducts: [
-                { id: 'PRD-001', name: 'NVIDIA RTX 4080', price: 29999, sales: 24, stock: 15 },
-                { id: 'PRD-002', name: 'AMD Ryzen 9 7950X', price: 14999, sales: 18, stock: 22 },
-                { id: 'PRD-003', name: 'Samsung 980 PRO 2TB', price: 3299, sales: 42, stock: 38 }
+            page: 1,
+            totalPages: 1,
+            totalItems: 2
+        };
+        
+        // Önbelleğe kaydet
+        this._saveSimulatedProducts(products);
+        
+        return products;
+    }
+    
+    // Simüle edilmiş ürünleri kaydet (local storage'a)
+    static _saveSimulatedProducts(products) {
+        try {
+            localStorage.setItem('simulated_products', JSON.stringify(products));
+        } catch (e) {
+            console.error('Simüle ürünler kaydedilemedi:', e);
+        }
+    }
+    
+    // Simüle edilmiş ürün detayı
+    static _getSimulatedProduct(productId) {
+        const cachedProducts = localStorage.getItem('simulated_products');
+        let products = [];
+        
+        if (cachedProducts) {
+            try {
+                const parsed = JSON.parse(cachedProducts);
+                products = parsed.data || [];
+            } catch (e) {
+                console.error('Önbellek ürünleri parse edilemedi:', e);
+            }
+        }
+        
+        const product = products.find(p => p._id === productId);
+        return product || null;
+    }
+    
+    // Simüle edilmiş kategorileri getir
+    static _getSimulatedCategories() {
+        return {
+            data: [
+                {
+                    _id: '1',
+                    name: 'Ekran Kartları',
+                    slug: 'ekran-kartlari',
+                    description: 'Gaming ve profesyonel kullanım için yüksek performanslı ekran kartları',
+                    parent: null,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    _id: '2',
+                    name: 'İşlemciler',
+                    slug: 'islemciler',
+                    description: 'Yüksek performanslı AMD ve Intel işlemciler',
+                    parent: null,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    _id: '3',
+                    name: 'Anakartlar',
+                    slug: 'anakartlar',
+                    description: 'Her ihtiyaca uygun anakartlar',
+                    parent: null,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    _id: '4',
+                    name: 'RAM Bellek',
+                    slug: 'ram-bellek',
+                    description: 'DDR4 ve DDR5 bellekler',
+                    parent: null,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    _id: '5',
+                    name: 'SSD ve Sabit Diskler',
+                    slug: 'depolama',
+                    description: 'Veri depolama çözümleri',
+                    parent: null,
+                    createdAt: new Date().toISOString()
+                }
             ]
         };
-    },
+    }
     
-    // Simulasyon sipariş verileri
-    _getSimulatedOrders() {
-        return {
-            orders: [
-                { id: 'ORD-1001', date: new Date(), customer: 'Ahmet Yılmaz', total: 2450, status: 'Tamamlandı' },
-                { id: 'ORD-1002', date: new Date(), customer: 'Mehmet Kaya', total: 1850, status: 'İşleniyor' },
-                { id: 'ORD-1003', date: new Date(), customer: 'Ayşe Demir', total: 3200, status: 'Kargoya Verildi' }
-            ],
-            total: 142,
-            page: 1,
-            totalPages: 15
-        };
-    },
+    // Simüle edilmiş kategori detayı
+    static _getSimulatedCategoryById(categoryId) {
+        const categories = this._getSimulatedCategories().data;
+        const category = categories.find(c => c._id === categoryId);
+        return category || null;
+    }
     
-    // Auth token işlemleri
-    getAuthToken() {
-        return localStorage.getItem('admin_token');
-    },
-    
-    isLoggedIn() {
-        return !!this.getAuthToken();
-    },
-    
-    // Redirect to login page
-    redirectToLogin() {
-        localStorage.removeItem('admin_token');
-        window.location.href = 'login.html';
-    },
-    
-    // Login
-    async login(email, password, rememberMe = false) {
-        const data = await this.request('/admin/login', 'POST', { email, password, rememberMe });
-        if (data.token) {
-            localStorage.setItem('admin_token', data.token);
+    // Simüle edilmiş istatistikler
+    static _getSimulatedStats() {
+        // Simüle edilmiş siparişleri oluştur
+        const recentOrders = [];
+        for (let i = 1; i <= 5; i++) {
+            recentOrders.push({
+                id: `ORD-${i.toString().padStart(4, '0')}`,
+                orderNumber: `ORD-${i.toString().padStart(4, '0')}`,
+                date: new Date(Date.now() - i * 86400000).toISOString(),
+                customer: `Müşteri ${i}`,
+                total: Math.floor(Math.random() * 10000) + 1000,
+                status: ['Tamamlandı', 'İşleniyor', 'Kargoya Verildi', 'İptal Edildi'][Math.floor(Math.random() * 4)]
+            });
         }
-        return data;
-    },
+        
+        // Simüle edilmiş popüler ürünleri oluştur
+        const popularProducts = [];
+        const products = ['RTX 4090', 'Ryzen 9 7950X', 'i9-13900K', 'G.Skill Trident Z5', 'Samsung 990 Pro'];
+        const categories = ['Ekran Kartları', 'İşlemciler', 'İşlemciler', 'RAM', 'Depolama'];
+        
+        for (let i = 0; i < 5; i++) {
+            popularProducts.push({
+                id: i + 1,
+                name: products[i],
+                category: categories[i],
+                price: Math.floor(Math.random() * 20000) + 5000,
+                sales: Math.floor(Math.random() * 50) + 10,
+                stock: Math.floor(Math.random() * 100) + 5
+            });
+        }
+        
+        // MongoDB'den veri alınmış gibi formatla
+        return {
+            products: 105,
+            categories: 15,
+            lowStock: 8,
+            totalOrders: 24,
+            totalSales: 125750.75,
+            totalCustomers: 18,
+            totalProducts: 105,
+            recentOrders: recentOrders,
+            popularProducts: popularProducts
+        };
+    }
     
-    // Logout
-    logout() {
-        localStorage.removeItem('admin_token');
-        window.location.href = 'login.html';
-    },
+    // Simüle edilmiş siparişler
+    static _getSimulatedOrders() {
+        return {
+            data: [
+                {
+                    _id: 'o1',
+                    orderNumber: 'ORD-2023001',
+                    customer: {
+                        name: 'Ahmet Yılmaz'
+                    },
+                    total: 12999.99,
+                    status: 'PENDING',
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    _id: 'o2',
+                    orderNumber: 'ORD-2023002',
+                    customer: {
+                        name: 'Ayşe Demir'
+                    },
+                    total: 25799.99,
+                    status: 'PROCESSING',
+                    createdAt: new Date().toISOString()
+                }
+            ],
+            page: 1,
+            totalPages: 1,
+            totalItems: 2
+        };
+    }
     
-    // İstatistikler
-    async getStats() {
-        return await this.request('/admin/stats');
-    },
+    // Kimlik doğrulama token'ını getir
+    static getAuthToken() {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        return user.token || null;
+    }
     
-    // Ürün işlemleri
-    async getProducts(params = {}) {
+    // Kullanıcı giriş durumunu kontrol et
+    static isLoggedIn() {
+        return !!this.getAuthToken();
+    }
+    
+    // Login sayfasına yönlendir
+    static redirectToLogin() {
+        if (!this.isLoggedIn()) {
+            window.location.href = '/admin/login.html';
+        }
+    }
+    
+    // Giriş işlemi
+    static async login(email, password) {
+        try {
+            const response = await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Giriş başarısız');
+            }
+            
+            // Kullanıcı admin kontrolü
+            if (data.role !== 'admin') {
+                throw new Error('Bu sayfaya erişim yetkiniz yok');
+            }
+            
+            // Kullanıcı bilgilerini ve token'ı kaydet
+            localStorage.setItem('user', JSON.stringify(data));
+            
+            return data;
+        } catch (error) {
+            console.error('Login hatası:', error);
+            throw error;
+        }
+    }
+    
+    // Çıkış işlemi
+    static logout() {
+        localStorage.removeItem('user');
+        window.location.href = '/admin/login.html';
+    }
+    
+    // İstatistikleri getir
+    static async getStats() {
+        return this.request('/api/admin/stats');
+    }
+    
+    // Ürünleri getir (filtreleme ve sayfalama ile)
+    static async getProducts(params = {}) {
+        // URL parametrelerini oluştur
         const queryParams = new URLSearchParams();
         
         if (params.page) queryParams.append('page', params.page);
@@ -282,391 +520,499 @@ const adminAPI = {
         if (params.search) queryParams.append('search', params.search);
         if (params.category) queryParams.append('category', params.category);
         if (params.status) queryParams.append('status', params.status);
-        if (params.sort) queryParams.append('sort', params.sort);
+        if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+        if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
         
-        const query = queryParams.toString();
-        return await this.request(`/admin/products${query ? '?' + query : ''}`);
-    },
+        const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        
+        // API isteğini gönder
+        return this.request(`/api/admin/products${queryString}`);
+    }
     
-    async getProductById(id) {
-        return await this.request(`/admin/products/${id}`);
-    },
+    // Ürün detayını getir
+    static async getProductById(id) {
+        return this.request(`/api/products/${id}`);
+    }
     
-    async createProduct(formData) {
-        try {
-            // API olmadığı durumda simülasyon
-            if (!this.isApiAvailable()) {
-                console.log('Simülasyon: Yeni ürün oluşturuluyor', Object.fromEntries(formData));
-                
-                // Form verilerini al
-                const name = formData.get('name');
-                const category = formData.get('category');
-                const price = parseFloat(formData.get('price'));
-                const stock = parseInt(formData.get('stock'));
-                const featured = formData.get('featured') === 'on' || formData.get('featured') === true;
-                const description = formData.get('description');
-                
-                // Rastgele bir ID oluştur
-                const productId = 'PRD-' + Math.floor(Math.random() * 9000 + 1000);
-                
-                // Yeni ürünü oluştur
-                const newProduct = {
-                    id: productId,
-                    name: name,
-                    category: category,
-                    price: price,
-                    stock: stock,
-                    featured: featured,
-                    description: description,
-                    image: '/admin/img/no-image.png' // Varsayılan görsel
-                };
-                
-                // Simulasyon modu - mevcut ürünleri al
-                const currentProducts = this._getSimulatedProducts().products;
-                
-                // Yeni ürünü başa ekle
-                currentProducts.unshift(newProduct);
-                
-                // Simulasyon ürün listesini kaydet
-                this._saveSimulatedProducts(currentProducts);
-                
-                console.log('Yeni ürün oluşturuldu (simulasyon):', newProduct);
-                return { 
-                    success: true, 
-                    message: 'Ürün başarıyla oluşturuldu (Simulasyon)',
-                    product: newProduct
-                };
-            }
-            
-            const response = await fetch(`${this.baseURL}/admin/products`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.getAuthToken()}`
-                },
-                body: formData
-            });
-            
-            if (response.status === 401) {
-                this.redirectToLogin();
-                return null;
-            }
-            
-            const result = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(result.message || 'Ürün eklenirken bir hata oluştu');
-            }
-            
-            return result;
-        } catch (error) {
-            console.error('Ürün oluşturma hatası:', error);
-            // Simulasyon başarılı sonucunu dön
-            return { success: true, message: 'Ürün başarıyla oluşturuldu (Simulasyon)' };
-        }
-    },
-    
-    async updateProduct(id, formData) {
-        try {
-            // API olmadığı durumda simülasyon
-            if (!this.isApiAvailable()) {
-                console.log('Simülasyon: Ürün güncelleniyor', id, Object.fromEntries(formData));
-                
-                // Form verilerini al
-                const name = formData.get('name');
-                const category = formData.get('category');
-                const price = parseFloat(formData.get('price'));
-                const stock = parseInt(formData.get('stock'));
-                const featured = formData.get('featured') === 'on' || formData.get('featured') === true;
-                const description = formData.get('description');
-                
-                // Simulasyon modu - mevcut ürünleri al
-                const currentProducts = this._getSimulatedProducts().products;
-                
-                // Güncellenecek ürünü bul
-                const productIndex = currentProducts.findIndex(p => p.id === id);
-                
-                if (productIndex === -1) {
-                    console.error('Güncellenecek ürün bulunamadı:', id);
-                    return { success: false, message: 'Ürün bulunamadı' };
-                }
-                
-                // Ürünü güncelle
-                currentProducts[productIndex] = {
-                    ...currentProducts[productIndex], // Mevcut özellikleri koru
-                    name: name,
-                    category: category,
-                    price: price,
-                    stock: stock,
-                    featured: featured,
-                    description: description
-                };
-                
-                // Ürün listesini güncelle
-                this._saveSimulatedProducts(currentProducts);
-                
-                console.log('Ürün güncellendi (simulasyon):', currentProducts[productIndex]);
-                return { 
-                    success: true, 
-                    message: 'Ürün başarıyla güncellendi (Simulasyon)',
-                    product: currentProducts[productIndex]
-                };
-            }
-            
-            // FormData, multipart/form-data olarak işlenmeli
-            const response = await fetch(`${this.baseURL}/admin/products/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${this.getAuthToken()}`
-                },
-                body: formData
-            });
-            
-            if (response.status === 401) {
-                this.redirectToLogin();
-                return null;
-            }
-            
-            const result = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(result.message || 'Ürün güncellenirken bir hata oluştu');
-            }
-            
-            return result;
-        } catch (error) {
-            console.error('Ürün güncelleme hatası:', error);
-            // Hata olduğunda bile başarılı simulasyon sonucu dön
-            return { success: true, message: 'Ürün başarıyla güncellendi (Simulasyon)' };
-        }
-    },
-    
-    async deleteProduct(id) {
-        try {
-            // API olmadığı durumda simülasyon
-            if (!this.isApiAvailable()) {
-                // Simulasyon modu - mevcut ürünleri al
-                const currentProducts = this._getSimulatedProducts().products;
-                
-                // Ürünü filtrele (sil)
-                const updatedProducts = currentProducts.filter(product => product.id !== id);
-                
-                // Ürün listesini güncelle
-                this._saveSimulatedProducts(updatedProducts);
-                
-                console.log('Ürün silindi (simulasyon):', id);
-                return { success: true, message: 'Ürün başarıyla silindi (Simulasyon)' };
-            }
-            
-            return await this.request(`/admin/products/${id}`, 'DELETE');
-        } catch (error) {
-            console.error('Ürün silme hatası:', error);
-            // Hata olduğunda bile başarılı simulasyon sonucu dön
-            return { success: true, message: 'Ürün başarıyla silindi (Simulasyon)' };
-        }
-    },
-    
-    async bulkUpdateProducts(ids, data) {
-        try {
-            // API olmadığı durumda simülasyon
-            if (!this.isApiAvailable()) {
-                // Simulasyon modu - mevcut ürünleri al
-                const currentProducts = this._getSimulatedProducts().products;
-                
-                // Ürünleri güncelle
-                const updatedProducts = currentProducts.map(product => {
-                    if (ids.includes(product.id)) {
-                        return { ...product, ...data };
+    // Yeni ürün oluştur
+    static async createProduct(formData) {
+        // Form verileri için özel işlem gerekiyor
+        if (formData instanceof FormData) {
+            try {
+                // Form verilerini API'ye gönder
+                const response = await fetch('/api/admin/products', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        // Content-Type belirtilmiyor, otomatik olarak multipart/form-data
+                        'Authorization': `Bearer ${this.getAuthToken()}`
                     }
-                    return product;
                 });
                 
-                // Ürün listesini güncelle
-                this._saveSimulatedProducts(updatedProducts);
+                const data = await response.json();
                 
-                console.log('Ürünler toplu güncellendi (simulasyon):', ids, data);
-                return { success: true, message: 'Ürünler başarıyla güncellendi (Simulasyon)' };
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP Hata: ${response.status}`);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Ürün oluşturma hatası:', error);
+                
+                // MongoDB bağlantısı yoksa simülasyon verilerini dene
+                if (this.isApiAvailable() === false) {
+                    console.log('Simülasyon verisi kullanılıyor (ürün oluşturma)');
+                    
+                    // Rastgele ID oluştur
+                    const randomId = Math.random().toString(36).substring(2, 15);
+                    
+                    // Form verilerinden temel alanları al
+                    const name = formData.get('name') || 'Yeni Ürün';
+                    const price = formData.get('price') ? parseFloat(formData.get('price')) : 0;
+                    const stock = formData.get('stock') ? parseInt(formData.get('stock')) : 0;
+                    const brand = formData.get('brand') || '';
+                    const description = formData.get('description') || '';
+                    
+                    // Örnek ürünü döndür
+                    return {
+                        _id: randomId,
+                        name,
+                        price,
+                        stock,
+                        brand,
+                        description,
+                        createdAt: new Date().toISOString()
+                    };
+                }
+                
+                throw error;
+            }
+        } else {
+            // Eğer FormData değilse, normal JSON isteği yap
+            return this.request('/api/admin/products', 'POST', formData);
+        }
+    }
+    
+    // Ürün güncelle
+    static async updateProduct(id, formData) {
+        // Form verileri için özel işlem gerekiyor
+        if (formData instanceof FormData) {
+            try {
+                console.log(`Ürün güncelleniyor: ${id}`);
+                console.log('FormData içeriği:');
+                for (const pair of formData.entries()) {
+                    if (pair[0] === 'image') {
+                        console.log(`${pair[0]}: Dosya: ${pair[1].name}, Boyut: ${pair[1].size}, Tip: ${pair[1].type}`);
+                    } else {
+                        console.log(`${pair[0]}: ${pair[1]}`);
+                    }
+                }
+                
+                // Form verilerini API'ye gönder
+                const response = await fetch(`/api/admin/products/${id}`, {
+                    method: 'PUT',
+                    body: formData, 
+                    headers: {
+                        // Content-Type belirtilmiyor, otomatik olarak multipart/form-data
+                        'Authorization': `Bearer ${this.getAuthToken()}`
+                    }
+                });
+                
+                const contentType = response.headers.get('content-type');
+                let data;
+                
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const text = await response.text();
+                    console.error('Sunucu JSON yanıtı döndürmedi:', text);
+                    throw new Error('Sunucudan geçersiz yanıt alındı');
+                }
+                
+                console.log('API yanıtı:', data);
+                
+                if (!response.ok) {
+                    console.error('Ürün güncellenemedi:', data);
+                    throw new Error(data.message || `Ürün güncellenemedi. HTTP Hata: ${response.status}`);
+                }
+                
+                console.log('Ürün başarıyla güncellendi:', data);
+                return data;
+            } catch (error) {
+                console.error('Ürün güncelleme hatası:', error);
+                
+                // MongoDB bağlantısı yoksa simülasyon verilerini dene
+                if (this.isApiAvailable() === false) {
+                    console.log('Simülasyon verisi kullanılıyor (ürün güncelleme)');
+                    
+                    // Mevcut ürünü al
+                    const existingProduct = this._getSimulatedProduct(id);
+                    
+                    if (!existingProduct) {
+                        throw new Error('Ürün bulunamadı');
+                    }
+                    
+                    // Form verilerinden temel alanları al
+                    const name = formData.get('name') || existingProduct.name;
+                    const price = formData.get('price') ? parseFloat(formData.get('price')) : existingProduct.price;
+                    const stock = formData.get('stock') ? parseInt(formData.get('stock')) : existingProduct.stock;
+                    const brand = formData.get('brand') || existingProduct.brand;
+                    const description = formData.get('description') || existingProduct.description;
+                    
+                    // Ürünü güncelle
+                    const updatedProduct = {
+                        ...existingProduct,
+                        name,
+                        price,
+                        stock,
+                        brand,
+                        description,
+                        updatedAt: new Date().toISOString()
+                    };
+                    
+                    // Önbellekteki ürünleri güncelle
+                    const cachedProducts = localStorage.getItem('simulated_products');
+                    
+                    if (cachedProducts) {
+                        try {
+                            const parsed = JSON.parse(cachedProducts);
+                            const products = parsed.data || [];
+                            
+                            // Ürünü güncelle
+                            const updatedProducts = products.map(p => p._id === id ? updatedProduct : p);
+                            
+                            // Güncellenmiş ürünleri kaydet
+                            localStorage.setItem('simulated_products', JSON.stringify({
+                                ...parsed,
+                                data: updatedProducts
+                            }));
+                        } catch (e) {
+                            console.error('Önbellek ürünleri güncellenemedi:', e);
+                        }
+                    }
+                    
+                    return updatedProduct;
+                }
+                
+                throw new Error(`Ürün güncellenemedi: ${error.message}`);
+            }
+        } else {
+            // Eğer FormData değilse, normal JSON isteği yap
+            return this.request(`/api/admin/products/${id}`, 'PUT', formData);
+        }
+    }
+    
+    // Ürün sil
+    static async deleteProduct(id) {
+        try {
+            return this.request(`/api/admin/products/${id}`, 'DELETE');
+        } catch (error) {
+            console.error('Ürün silme hatası:', error);
+            
+            // MongoDB bağlantısı yoksa simülasyon verilerini dene
+            if (this.isApiAvailable() === false) {
+                console.log('Simülasyon verisi kullanılıyor (ürün silme)');
+                
+                // Önbellekteki ürünleri güncelle
+                const cachedProducts = localStorage.getItem('simulated_products');
+                
+                if (cachedProducts) {
+                    try {
+                        const parsed = JSON.parse(cachedProducts);
+                        const products = parsed.data || [];
+                        
+                        // Ürünü sil
+                        const updatedProducts = products.filter(p => p._id !== id);
+                        
+                        // Güncellenmiş ürünleri kaydet
+                        localStorage.setItem('simulated_products', JSON.stringify({
+                            ...parsed,
+                            data: updatedProducts,
+                            totalItems: updatedProducts.length
+                        }));
+                    } catch (e) {
+                        console.error('Önbellek ürünleri güncellenemedi:', e);
+                    }
+                }
+                
+                return { message: 'Ürün başarıyla silindi' };
             }
             
-            return await this.request('/admin/products/bulk', 'PUT', { ids, ...data });
+            throw error;
+        }
+    }
+    
+    // Toplu ürün güncelleme
+    static async bulkUpdateProducts(ids, data) {
+        try {
+            return this.request('/api/admin/products/bulk-update', 'POST', { ids, update: data });
         } catch (error) {
             console.error('Toplu ürün güncelleme hatası:', error);
-            // Hata olduğunda bile başarılı simulasyon sonucu dön
-            return { success: true, message: 'Ürünler başarıyla güncellendi (Simulasyon)' };
-        }
-    },
-    
-    async bulkDeleteProducts(ids) {
-        try {
-            // API olmadığı durumda simülasyon
-            if (!this.isApiAvailable()) {
-                // Simulasyon modu - mevcut ürünleri al
-                const currentProducts = this._getSimulatedProducts().products;
+            
+            // MongoDB bağlantısı yoksa simülasyon verilerini dene
+            if (this.isApiAvailable() === false) {
+                console.log('Simülasyon verisi kullanılıyor (toplu ürün güncelleme)');
                 
-                // Ürünleri filtrele (sil)
-                const updatedProducts = currentProducts.filter(product => !ids.includes(product.id));
+                // Önbellekteki ürünleri güncelle
+                const cachedProducts = localStorage.getItem('simulated_products');
                 
-                // Ürün listesini güncelle
-                this._saveSimulatedProducts(updatedProducts);
+                if (cachedProducts) {
+                    try {
+                        const parsed = JSON.parse(cachedProducts);
+                        const products = parsed.data || [];
+                        
+                        // Ürünleri güncelle
+                        const updatedProducts = products.map(p => {
+                            if (ids.includes(p._id)) {
+                                return { ...p, ...data, updatedAt: new Date().toISOString() };
+                            }
+                            return p;
+                        });
+                        
+                        // Güncellenmiş ürünleri kaydet
+                        localStorage.setItem('simulated_products', JSON.stringify({
+                            ...parsed,
+                            data: updatedProducts
+                        }));
+                    } catch (e) {
+                        console.error('Önbellek ürünleri güncellenemedi:', e);
+                    }
+                }
                 
-                console.log('Ürünler toplu silindi (simulasyon):', ids);
-                return { success: true, message: 'Ürünler başarıyla silindi (Simulasyon)' };
+                return { message: `${ids.length} ürün başarıyla güncellendi` };
             }
             
-            return await this.request('/admin/products/bulk', 'DELETE', { ids });
+            throw error;
+        }
+    }
+    
+    // Toplu ürün silme
+    static async bulkDeleteProducts(ids) {
+        try {
+            return this.request('/api/admin/products/bulk-delete', 'POST', { ids });
         } catch (error) {
             console.error('Toplu ürün silme hatası:', error);
-            // Hata olduğunda bile başarılı simulasyon sonucu dön
-            return { success: true, message: 'Ürünler başarıyla silindi (Simulasyon)' };
+            
+            // MongoDB bağlantısı yoksa simülasyon verilerini dene
+            if (this.isApiAvailable() === false) {
+                console.log('Simülasyon verisi kullanılıyor (toplu ürün silme)');
+                
+                // Önbellekteki ürünleri güncelle
+                const cachedProducts = localStorage.getItem('simulated_products');
+                
+                if (cachedProducts) {
+                    try {
+                        const parsed = JSON.parse(cachedProducts);
+                        const products = parsed.data || [];
+                        
+                        // Ürünleri sil
+                        const updatedProducts = products.filter(p => !ids.includes(p._id));
+                        
+                        // Güncellenmiş ürünleri kaydet
+                        localStorage.setItem('simulated_products', JSON.stringify({
+                            ...parsed,
+                            data: updatedProducts,
+                            totalItems: updatedProducts.length
+                        }));
+                    } catch (e) {
+                        console.error('Önbellek ürünleri güncellenemedi:', e);
+                    }
+                }
+                
+                return { message: `${ids.length} ürün başarıyla silindi` };
+            }
+            
+            throw error;
         }
-    },
-    
-    // Kategori işlemleri
-    async getCategories(params = {}) {
-        const queryParams = new URLSearchParams();
-        
-        if (params.page) queryParams.append('page', params.page);
-        if (params.limit) queryParams.append('limit', params.limit);
-        if (params.search) queryParams.append('search', params.search);
-        
-        const query = queryParams.toString();
-        return await this.request(`/admin/categories${query ? '?' + query : ''}`);
-    },
-    
-    async getCategoryById(id) {
-        return await this.request(`/admin/categories/${id}`);
-    },
-    
-    async createCategory(formData) {
-        // FormData, multipart/form-data olarak işlenmeli
-        const response = await fetch(`${this.baseURL}/admin/categories`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.getAuthToken()}`
-            },
-            body: formData
-        });
-        
-        if (response.status === 401) {
-            this.redirectToLogin();
-            return null;
-        }
-        
-        const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.message || 'Kategori eklenirken bir hata oluştu');
-        }
-        
-        return result;
-    },
-    
-    async updateCategory(id, formData) {
-        // FormData, multipart/form-data olarak işlenmeli
-        const response = await fetch(`${this.baseURL}/admin/categories/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${this.getAuthToken()}`
-            },
-            body: formData
-        });
-        
-        if (response.status === 401) {
-            this.redirectToLogin();
-            return null;
-        }
-        
-        const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.message || 'Kategori güncellenirken bir hata oluştu');
-        }
-        
-        return result;
-    },
-    
-    async deleteCategory(id) {
-        return await this.request(`/admin/categories/${id}`, 'DELETE');
-    },
-    
-    // Sipariş işlemleri
-    async getOrders(params = {}) {
-        const queryParams = new URLSearchParams();
-        
-        if (params.page) queryParams.append('page', params.page);
-        if (params.limit) queryParams.append('limit', params.limit);
-        if (params.search) queryParams.append('search', params.search);
-        if (params.status) queryParams.append('status', params.status);
-        if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
-        if (params.dateTo) queryParams.append('dateTo', params.dateTo);
-        if (params.sort) queryParams.append('sort', params.sort);
-        
-        const query = queryParams.toString();
-        return await this.request(`/admin/orders${query ? '?' + query : ''}`);
-    },
-    
-    async getOrderById(id) {
-        return await this.request(`/admin/orders/${id}`);
-    },
-    
-    async updateOrderStatus(id, status) {
-        return await this.request(`/admin/orders/${id}/status`, 'PUT', { status });
-    },
-    
-    // Müşteri işlemleri
-    async getCustomers(params = {}) {
-        const queryParams = new URLSearchParams();
-        
-        if (params.page) queryParams.append('page', params.page);
-        if (params.limit) queryParams.append('limit', params.limit);
-        if (params.search) queryParams.append('search', params.search);
-        if (params.sort) queryParams.append('sort', params.sort);
-        
-        const query = queryParams.toString();
-        return await this.request(`/admin/customers${query ? '?' + query : ''}`);
-    },
-    
-    async getCustomerById(id) {
-        return await this.request(`/admin/customers/${id}`);
-    },
-    
-    async getCustomerOrders(id) {
-        return await this.request(`/admin/customers/${id}/orders`);
-    },
-    
-    // Ayarlar
-    async getSettings() {
-        return await this.request('/admin/settings');
-    },
-    
-    async saveSettings(type, formData) {
-        // FormData, multipart/form-data olarak işlenmeli
-        const response = await fetch(`${this.baseURL}/admin/settings/${type}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${this.getAuthToken()}`
-            },
-            body: formData
-        });
-        
-        if (response.status === 401) {
-            this.redirectToLogin();
-            return null;
-        }
-        
-        const result = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(result.message || 'Ayarlar kaydedilirken bir hata oluştu');
-        }
-        
-        return result;
-    },
-    
-    async sendTestEmail(email) {
-        return await this.request('/admin/settings/test-email', 'POST', { email });
-    },
-    
-    async clearCache() {
-        return await this.request('/admin/settings/clear-cache', 'POST');
     }
-}; 
+    
+    // Kategorileri getir
+    static async getCategories(params = {}) {
+        try {
+            // URL parametrelerini oluştur
+            const queryParams = new URLSearchParams();
+            
+            if (params.page) queryParams.append('page', params.page);
+            if (params.limit) queryParams.append('limit', params.limit);
+            if (params.search) queryParams.append('search', params.search);
+            if (params.parent) queryParams.append('parent', params.parent);
+            
+            const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+            
+            // API isteğini gönder
+            return this.request(`/api/admin/categories${queryString}`);
+        } catch (error) {
+            console.error('Kategoriler alınırken hata:', error);
+            
+            // MongoDB bağlantısı yoksa simülasyon verilerini dene
+            if (this.isApiAvailable() === false) {
+                console.log('Simülasyon verisi kullanılıyor (kategoriler)');
+                return this._getSimulatedCategories();
+            }
+            
+            throw error;
+        }
+    }
+    
+    // Kategori detayını getir
+    static async getCategoryById(id) {
+        try {
+            return this.request(`/api/admin/categories/${id}`);
+        } catch (error) {
+            console.error('Kategori detayı alınırken hata:', error);
+            
+            // MongoDB bağlantısı yoksa simülasyon verilerini dene
+            if (this.isApiAvailable() === false) {
+                console.log('Simülasyon verisi kullanılıyor (kategori detayı)');
+                const category = this._getSimulatedCategoryById(id);
+                if (!category) {
+                    throw new Error('Kategori bulunamadı');
+                }
+                return category;
+            }
+            
+            throw error;
+        }
+    }
+    
+    // Yeni kategori oluştur
+    static async createCategory(formData) {
+        return this.request('/api/admin/categories', 'POST', formData);
+    }
+    
+    // Kategori güncelle
+    static async updateCategory(id, formData) {
+        return this.request(`/api/admin/categories/${id}`, 'PUT', formData);
+    }
+    
+    // Kategori sil
+    static async deleteCategory(id) {
+        return this.request(`/api/admin/categories/${id}`, 'DELETE');
+    }
+    
+    // Siparişleri getir
+    static async getOrders(params = {}) {
+        try {
+            // URL parametrelerini oluştur
+            const queryParams = new URLSearchParams();
+            
+            if (params.page) queryParams.append('page', params.page);
+            if (params.limit) queryParams.append('limit', params.limit);
+            if (params.status) queryParams.append('status', params.status);
+            if (params.search) queryParams.append('search', params.search);
+            if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+            if (params.dateTo) queryParams.append('dateTo', params.dateTo);
+            
+            const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+            
+            console.log(`Sipariş API isteği: /api/admin/orders${queryString}`);
+            
+            // API isteğini gönder
+            const response = await this.request(`/api/admin/orders${queryString}`);
+            console.log('Sipariş API yanıtı:', response);
+            
+            // Yanıt formatını kontrol et ve uyumlu hale getir
+            if (!response.data && response.orders) {
+                // Eski format yanıtı yenisine uyarla
+                response.data = response.orders;
+            }
+            
+            return response;
+        } catch (error) {
+            console.error('Siparişler alınırken hata:', error);
+            
+            // Simülasyon verilerini dene
+            if (this.isApiAvailable() === false) {
+                console.log('Simülasyon verisi kullanılıyor (siparişler)');
+                return this._getSimulatedOrders();
+            }
+            
+            throw error;
+        }
+    }
+    
+    // Sipariş detayını getir
+    static async getOrderById(id) {
+        return this.request(`/api/admin/orders/${id}`);
+    }
+    
+    // Sipariş durumunu güncelle
+    static async updateOrderStatus(id, status) {
+        return this.request(`/api/admin/orders/${id}/status`, 'PUT', { status });
+    }
+    
+    // Sipariş bilgilerini güncelle
+    static async updateOrder(id, data) {
+        return this.request(`/api/admin/orders/${id}`, 'PUT', data);
+    }
+    
+    // Müşterileri getir
+    static async getCustomers(params = {}) {
+        // URL parametrelerini oluştur
+        const queryParams = new URLSearchParams();
+        
+        if (params.page) queryParams.append('page', params.page);
+        if (params.limit) queryParams.append('limit', params.limit);
+        if (params.search) queryParams.append('search', params.search);
+        
+        const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        
+        // API isteğini gönder
+        return this.request(`/api/admin/customers${queryString}`);
+    }
+    
+    // Müşteri detayını getir
+    static async getCustomerById(id) {
+        return this.request(`/api/admin/customers/${id}`);
+    }
+    
+    // Müşterinin siparişlerini getir
+    static async getCustomerOrders(id) {
+        return this.request(`/api/admin/customers/${id}/orders`);
+    }
+    
+    // Ayarları getir
+    static async getSettings() {
+        return this.request('/api/admin/settings');
+    }
+    
+    // Ayarları kaydet
+    static async saveSettings(type, formData) {
+        try {
+            // Form verileri için özel işlem gerekiyor
+            if (formData instanceof FormData) {
+                const response = await fetch(`/api/admin/settings/${type}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${this.getAuthToken()}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP Hata: ${response.status}`);
+                }
+                
+                return data;
+            } else {
+                // Normal JSON isteği
+                return this.request(`/api/admin/settings/${type}`, 'POST', formData);
+            }
+        } catch (error) {
+            console.error('Ayarlar kaydedilirken hata:', error);
+            throw error;
+        }
+    }
+    
+    // Test e-posta gönder
+    static async sendTestEmail(email) {
+        return this.request('/api/admin/settings/email/test', 'POST', { email });
+    }
+    
+    // Önbelleği temizle
+    static async clearCache() {
+        return this.request('/api/admin/cache/clear', 'POST');
+    }
+} 

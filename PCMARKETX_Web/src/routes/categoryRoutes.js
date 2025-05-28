@@ -16,9 +16,9 @@ router.get('/', async (req, res) => {
 });
 
 // @desc    Slug'a göre kategori getir
-// @route   GET /api/categories/:slug
+// @route   GET /api/categories/slug/:slug
 // @access  Public
-router.get('/:slug', async (req, res) => {
+router.get('/slug/:slug', async (req, res) => {
   try {
     const category = await Category.findOne({ slug: req.params.slug });
     

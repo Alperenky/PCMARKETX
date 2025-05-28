@@ -37,21 +37,9 @@
                     <i class="fas fa-box"></i>
                     <span>Ürünler</span>
                 </a>
-                <a href="categories.html" class="sidebar-nav-item">
-                    <i class="fas fa-tags"></i>
-                    <span>Kategoriler</span>
-                </a>
                 <a href="orders.html" class="sidebar-nav-item active">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Siparişler</span>
-                </a>
-                <a href="customers.html" class="sidebar-nav-item">
-                    <i class="fas fa-users"></i>
-                    <span>Müşteriler</span>
-                </a>
-                <a href="settings.html" class="sidebar-nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Ayarlar</span>
                 </a>
             </div>
         </div>
@@ -136,11 +124,16 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Test Butonu -->
+            <button id="testModalBtn" class="btn btn-warning" style="margin-top: 20px;">
+                <i class="fas fa-bug"></i> Modal Test
+            </button>
         </div>
     </div>
     
     <!-- Order Detail Modal -->
-    <div class="modal" id="orderDetailModal">
+    <div class="modal" id="orderDetailModal" style="display: flex;">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -289,8 +282,64 @@
     
     <div class="notification-container"></div>
     
-    <script src="../js/admin/admin.js"></script>
-    <script src="../js/admin/admin-api.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/admin-api.js"></script>
     <script src="../js/admin/admin-orders.js"></script>
+    <script>
+        // Hata ayıklama ve uyumluluk sağlama
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM yüklendi, siparişler sayfası başlatılıyor...');
+            
+            // Test butonu için olay dinleyicisi
+            document.getElementById('testModalBtn').addEventListener('click', function() {
+                console.log('Test butonu tıklandı');
+                const modal = document.getElementById('orderDetailModal');
+                console.log('Modal element:', modal);
+                
+                if (modal) {
+                    modal.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    console.log('Modal açıldı (test)');
+                } else {
+                    console.error('Modal bulunamadı!');
+                    alert('Modal bulunamadı! OrderDetailModal ID\'li element bulunamadı.');
+                }
+            });
+            
+            // formatDate ve formatPrice fonksiyonlarını kontrol et
+            if (typeof formatDate !== 'function') {
+                console.warn('formatDate fonksiyonu bulunamadı, tanımlanıyor...');
+                window.formatDate = function(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleString('tr-TR', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+            }
+            
+            if (typeof formatPrice !== 'function') {
+                console.warn('formatPrice fonksiyonu bulunamadı, tanımlanıyor...');
+                window.formatPrice = function(price) {
+                    return parseFloat(price).toLocaleString('tr-TR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }) + ' ₺';
+                };
+            }
+            
+            // Sayfa başlatma fonksiyonunu çağır
+            if (typeof initOrdersPage === 'function') {
+                console.log('initOrdersPage fonksiyonu çağrılıyor...');
+                initOrdersPage();
+            } else {
+                console.error('initOrdersPage fonksiyonu bulunamadı!');
+            }
+        });
+    </script>
 </body>
 </html> 
